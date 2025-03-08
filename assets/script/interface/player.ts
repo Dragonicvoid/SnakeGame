@@ -6,6 +6,8 @@ import { FoodConfig } from "./food";
 import { PlayerManager } from "../manager/playerManager";
 import { ArenaManager } from "../manager/ArenaManager";
 import { FoodManager } from "../manager/foodManager";
+import { Coordinate } from "./map";
+import { AStarSearchData } from "../util/aStar";
 
 export interface SnakeConfig {
     id: string,
@@ -21,6 +23,7 @@ export interface SnakeState {
     body: SnakeBody[];
     velocity: Vec2,
     inDirectionChange: boolean,
+    debugData?: SnakeDebugData,
     targetFood: {
         food: FoodConfig,
         timeTargeted: number,
@@ -44,3 +47,11 @@ export interface ManagerActionData {
     arenaManager: ArenaManager,
     foodManager: FoodManager,
 }
+
+export interface SnakeDebugData {
+    enemyID?: string;
+    actionName?: string;
+    enemyPath?: Coordinate[];
+    pathfindingState?: AStarSearchData;
+    possibleActions?: Map<BOT_ACTION, BaseAction>;
+  }

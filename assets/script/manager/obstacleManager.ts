@@ -4,14 +4,9 @@ import { Coordinate, TileMapData } from '../interface/map';
 import { ARENA_DEFAULT_OBJECT_SIZE, ARENA_DEFAULT_VALUE, ARENA_OBJECT_TYPE } from '../enum/arenaConfig';
 import { convertToArenaPos, getGridIdxByCoord } from '../util/arenaConvert';
 import { ObstacleSpriteRef } from '../interface/other';
+import { GameplayCamera } from '../object/gameplayCamera';
 const { ccclass, property } = _decorator;
 
-type TCreateGrassInstance = {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-};
 @ccclass('ObstacleManager')
 export class ObstacleManager extends Component {
   private readonly OUTSIDE_GRASS_OPACITY = 255;

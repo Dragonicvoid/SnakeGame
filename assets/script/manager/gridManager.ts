@@ -1,12 +1,14 @@
-import { _decorator, Component, game, math } from 'cc';
+import { _decorator, Component, game, math, Vec2 } from 'cc';
 import { FoodConfig } from '../interface/food';
 import { GridConfig, SpikeConfig } from '../interface/gridConfig';
-import { ARENA_DEFAULT_VALUE } from '../enum/arenaConfig';
+import { ARENA_DEFAULT_OBJECT_SIZE, ARENA_DEFAULT_VALUE, ARENA_OBJECT_TYPE } from '../enum/arenaConfig';
 import { FoodManager } from './foodManager';
 import { Coordinate } from '../interface/map';
 import { VISIBILITY_UPDATE_INTERVAL } from '../enum/other';
 import { getGridIdxByCoord } from '../util/arenaConvert';
 import { ObstacleManager } from './obstacleManager';
+import { ObstacleSpriteRef } from '../interface/other';
+import { GameplayCamera } from '../object/gameplayCamera';
 const { ccclass, property } = _decorator;
 
 @ccclass('GridManager')
@@ -117,14 +119,20 @@ export class GridManager extends Component {
           GRID_HEIGHT,
         )
       ) {
-        grid.foods.forEach((food) => {
-          food.object.updateSpriteVisibility();
-        });
+        // grid.foods.forEach((food) => {
+        //   food.object.updateSpriteVisibility();
+        // });
 
         grid.spikes.forEach((spike) => {
+          const conf: ObstacleSpriteRef = {
+            parent: null,
+            position: new Vec2(spike.position.x, spike.position.y),
+            dimension: new Vec2(ARENA_DEFAULT_OBJECT_SIZE.SPIKE, ARENA_DEFAULT_OBJECT_SIZE.SPIKE),
+            targetOpacity: 255,
+          }
           this.obstacleManager?.updateObstacleSpriteVisibility(
-            spike,
-            OBSTACLE_TYPE.OBSTACLE_SPIKE,
+            conf,
+            ARENA_OBJECT_TYPE.SPIKE,
           );
         });
       }
