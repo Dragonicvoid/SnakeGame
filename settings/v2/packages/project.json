@@ -1,0 +1,25 @@
+{
+  "__version__": "1.0.6",
+  "physics": {
+    "collisionGroups": [
+      {
+        "index": 1,
+        "name": "Food"
+      },
+      {
+        "index": 2,
+        "name": "Body"
+      },
+      {
+        "index": 3,
+        "name": "FoodSensor"
+      }
+    ],
+    "collisionMatrix": {
+      "0": 1,
+      "1": 8,
+      "2": 4,
+      "3": 2
+    }
+  }
+}
