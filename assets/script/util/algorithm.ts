@@ -1,5 +1,5 @@
-import { Vec2 } from 'cc';
-import { Coordinate } from '../interface/map';
+import { Vec2 } from "cc";
+import { Coordinate } from "../interface/map";
 
 /**
  * Checks whether vec2 is on the left (returns +1) or on the right (returns -1) side of vec1

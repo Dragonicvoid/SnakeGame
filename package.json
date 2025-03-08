@@ -3,5 +3,11 @@
   "uuid": "e605219b-2bd8-4b88-9b9c-c7d791309998",
   "creator": {
     "version": "3.8.5"
+  },
+  "scripts": {
+    "format": "npx prettier . --write"
+  },
+  "dependencies": {
+    "prettier": "^3.5.3"
   }
 }

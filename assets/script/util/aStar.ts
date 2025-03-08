@@ -1,9 +1,9 @@
-import { Component, Vec2, _decorator } from 'cc';
+import { Component, Vec2, _decorator } from "cc";
 import {
   ARENA_DEFAULT_OBJECT_SIZE,
   ARENA_OBJECT_TYPE,
-} from '../enum/arenaConfig';
-import { Coordinate, TileMapData } from '../interface/map';
+} from "../enum/arenaConfig";
+import { Coordinate, TileMapData } from "../interface/map";
 const { ccclass, property } = _decorator;
 
 export class AStarPoint {
@@ -34,13 +34,13 @@ export interface AStarSearchData {
   pathFound: AStarPoint | null;
 }
 
-@ccclass('AStar')
+@ccclass("AStar")
 export class AStar extends Component {
   private map: TileMapData[][] = [];
 
   private padding = 1;
 
-  private currID = '';
+  private currID = "";
 
   public setMap(map: TileMapData[][]) {
     this.map = map;
@@ -178,7 +178,7 @@ export class AStar extends Component {
       return { result, data: prevData };
     }
 
-    console.log('NO PATH');
+    console.log("NO PATH");
     return { result: [], data: prevData };
   }
 
@@ -286,8 +286,7 @@ export class AStar extends Component {
     if (this.map[idxX] === undefined || this.map[idxX][idxY] === undefined)
       return false;
 
-    const safeObstacle =
-      this.map[idxX][idxY].type !== ARENA_OBJECT_TYPE.SPIKE
+    const safeObstacle = this.map[idxX][idxY].type !== ARENA_OBJECT_TYPE.SPIKE;
 
     const occupyByOther = this.map[idxX][idxY].playerIDList.find(
       (id) => id !== this.currID,
@@ -311,7 +310,7 @@ export class AStar extends Component {
 
 export function getStringCoordName(coord: Coordinate) {
   const { x, y } = getIdxByCoord(coord);
-  const result = 'Coord_' + x + '_' + y;
+  const result = "Coord_" + x + "_" + y;
   return result;
 }
 

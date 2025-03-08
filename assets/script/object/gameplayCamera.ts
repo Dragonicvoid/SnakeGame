@@ -1,168 +1,167 @@
 import {
-    _decorator,
-    Component,
-    Camera,
-    view,
-    Node,
-    v2,
-    KeyCode,
-    EventKeyboard,
-    input,
-    Input,
-    Color,
-} from 'cc';
-import { SnakeConfig } from '../interface/player';
-import { shouldDebug } from '../util/query';
-import { CAMERA_DIMENSION_MULTIPLIER } from '../enum/cameraConfig';
-import { checkAABBCollision } from '../util/algorithm';
-import { AIDebugger } from '../aiDebugger/aiDebugger';
+  _decorator,
+  Component,
+  Camera,
+  view,
+  Node,
+  v2,
+  KeyCode,
+  EventKeyboard,
+  input,
+  Input,
+  Color,
+} from "cc";
+import { SnakeConfig } from "../interface/player";
+import { shouldDebug } from "../util/query";
+import { CAMERA_DIMENSION_MULTIPLIER } from "../enum/cameraConfig";
+import { checkAABBCollision } from "../util/algorithm";
+import { AIDebugger } from "../aiDebugger/aiDebugger";
 const { ccclass, property } = _decorator;
 
 export enum GAMEPLAY_CAMERA_EVENT {
-    LOCK_ON = 'lock_on',
-    CHANGE_PLAYER = 'change-player',
+  LOCK_ON = "lock_on",
+  CHANGE_PLAYER = "change-player",
 }
 
-
-@ccclass('GameplayCamera')
+@ccclass("GameplayCamera")
 export class GameplayCamera extends Component {
-    @property(AIDebugger)
-    private aiDebugger: AIDebugger | null = null;
+  @property(AIDebugger)
+  private aiDebugger: AIDebugger | null = null;
 
-    private defaultOrthoHeight = 320;
+  private defaultOrthoHeight = 320;
 
-    private playerToFollow?: SnakeConfig;
+  private playerToFollow?: SnakeConfig;
 
-    private camera?: Camera | null;
+  private camera?: Camera | null;
 
-    /**
-     * Camera dimension used to determine node visibility
-     */
-    private cameraDimension = v2(0, 0);
+  /**
+   * Camera dimension used to determine node visibility
+   */
+  private cameraDimension = v2(0, 0);
 
-    private onKeyboardUpCallback = (event: EventKeyboard) => { };
+  private onKeyboardUpCallback = (event: EventKeyboard) => {};
 
-    onLoad() {
-        this.camera = this.getComponent(Camera);
-        this.setupCameraInput();
+  onLoad() {
+    this.camera = this.getComponent(Camera);
+    this.setupCameraInput();
+  }
+
+  private setupCameraInput() {
+    const debug = shouldDebug();
+
+    this.onKeyboardUpCallback = this.onKeyboardUp.bind(this);
+
+    if (debug) {
+      input.off(Input.EventType.KEY_UP, this.onKeyboardUpCallback);
+      input.on(Input.EventType.KEY_UP, this.onKeyboardUpCallback, this);
     }
+  }
 
-    private setupCameraInput() {
-        const debug = shouldDebug();
+  public setPlayerToFollow(playerInstance: SnakeConfig) {
+    this.playerToFollow = playerInstance;
+    this.aiDebugger?.setPlayerToDebug(playerInstance);
+    if (this.isValid) this.node?.emit(GAMEPLAY_CAMERA_EVENT.LOCK_ON);
+  }
 
-        this.onKeyboardUpCallback = this.onKeyboardUp.bind(this);
-
-        if (debug) {
-            input.off(Input.EventType.KEY_UP, this.onKeyboardUpCallback);
-            input.on(Input.EventType.KEY_UP, this.onKeyboardUpCallback, this);
-        }
+  private updatePosition() {
+    const playerHead = this.playerToFollow?.state.body[0];
+    if (playerHead) {
+      const { x, y } = playerHead.position;
+      this.moveTo(x, y);
     }
+  }
 
-    public setPlayerToFollow(playerInstance: SnakeConfig) {
-        this.playerToFollow = playerInstance;
-        this.aiDebugger?.setPlayerToDebug(playerInstance);
-        if (this.isValid) this.node?.emit(GAMEPLAY_CAMERA_EVENT.LOCK_ON);
+  private moveTo(targetX: number, targetY: number) {
+    const { z } = this.node.position;
+
+    this.node.setPosition(targetX, targetY, z);
+  }
+
+  private onKeyboardUp(event: EventKeyboard) {
+    switch (event.keyCode) {
+      case KeyCode.KEY_D:
+        if (this.isValid)
+          this.node?.emit(GAMEPLAY_CAMERA_EVENT.CHANGE_PLAYER, 1);
+        break;
+      case KeyCode.KEY_A:
+        if (this.isValid)
+          this.node?.emit(GAMEPLAY_CAMERA_EVENT.CHANGE_PLAYER, -1);
+        break;
     }
+  }
 
-    private updatePosition() {
-        const playerHead = this.playerToFollow?.state.body[0];
-        if (playerHead) {
-            const { x, y } = playerHead.position;
-            this.moveTo(x, y);
-        }
+  setCameraClearColor(color: Color) {
+    if (!this.camera?.isValid) return;
+    this.camera.clearColor = color;
+  }
+
+  setCameraScale(scale: number) {
+    const { camera, defaultOrthoHeight } = this;
+    if (camera) {
+      camera.orthoHeight = defaultOrthoHeight * scale;
     }
+    this.updateCameraDimension();
+  }
 
-    private moveTo(targetX: number, targetY: number) {
-        const { z } = this.node.position;
+  getCameraScale() {
+    if (!this.camera) return 1;
+    return this.camera.orthoHeight / this.defaultOrthoHeight;
+  }
 
-        this.node.setPosition(targetX, targetY, z);
-    }
+  private updateCameraDimension() {
+    const { width, height } = view.getVisibleSize();
+    const cameraScale = this.getCameraScale();
 
-    private onKeyboardUp(event: EventKeyboard) {
-        switch (event.keyCode) {
-            case KeyCode.KEY_D:
-                if (this.isValid)
-                    this.node?.emit(GAMEPLAY_CAMERA_EVENT.CHANGE_PLAYER, 1);
-                break;
-            case KeyCode.KEY_A:
-                if (this.isValid)
-                    this.node?.emit(GAMEPLAY_CAMERA_EVENT.CHANGE_PLAYER, -1);
-                break;
-        }
-    }
+    this.cameraDimension.set(
+      width * cameraScale * CAMERA_DIMENSION_MULTIPLIER,
+      height * cameraScale * CAMERA_DIMENSION_MULTIPLIER,
+    );
+  }
 
-    setCameraClearColor(color: Color) {
-        if (!this.camera?.isValid) return;
-        this.camera.clearColor = color;
-    }
+  lateUpdate() {
+    this.updatePosition();
+  }
 
-    setCameraScale(scale: number) {
-        const { camera, defaultOrthoHeight } = this;
-        if (camera) {
-            camera.orthoHeight = defaultOrthoHeight * scale;
-        }
-        this.updateCameraDimension();
-    }
+  /**
+   * Checks for node visibility in camera using AABB collision
+   * @param node
+   * @param offsetX
+   * @param offsetY
+   * @param nodeWidth
+   * @param nodeHeight
+   * @returns true if visible, false if not visible
+   */
+  public isNodeVisibleInCamera(
+    node: Node,
+    offsetX = 0,
+    offsetY = 0,
+    nodeWidth = 0,
+    nodeHeight = 0,
+  ) {
+    const nodeX = node.position.x + offsetX;
+    const nodeY = node.position.y + offsetY;
 
-    getCameraScale() {
-        if (!this.camera) return 1;
-        return this.camera.orthoHeight / this.defaultOrthoHeight;
-    }
+    return this.isRectVisibleInCamera(nodeX, nodeY, nodeWidth, nodeHeight);
+  }
 
-    private updateCameraDimension() {
-        const { width, height } = view.getVisibleSize();
-        const cameraScale = this.getCameraScale();
+  public isRectVisibleInCamera(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+  ) {
+    const { x: cameraX, y: cameraY } = this.node.position;
+    const { x: cameraWidth, y: cameraHeight } = this.cameraDimension;
 
-        this.cameraDimension.set(
-            width * cameraScale * CAMERA_DIMENSION_MULTIPLIER,
-            height * cameraScale * CAMERA_DIMENSION_MULTIPLIER,
-        );
-    }
-
-    lateUpdate() {
-        this.updatePosition();
-    }
-
-    /**
-     * Checks for node visibility in camera using AABB collision
-     * @param node
-     * @param offsetX
-     * @param offsetY
-     * @param nodeWidth
-     * @param nodeHeight
-     * @returns true if visible, false if not visible
-     */
-    public isNodeVisibleInCamera(
-        node: Node,
-        offsetX = 0,
-        offsetY = 0,
-        nodeWidth = 0,
-        nodeHeight = 0,
-    ) {
-        const nodeX = node.position.x + offsetX;
-        const nodeY = node.position.y + offsetY;
-
-        return this.isRectVisibleInCamera(nodeX, nodeY, nodeWidth, nodeHeight);
-    }
-
-    public isRectVisibleInCamera(
-        x: number,
-        y: number,
-        width: number,
-        height: number,
-    ) {
-        const { x: cameraX, y: cameraY } = this.node.position;
-        const { x: cameraWidth, y: cameraHeight } = this.cameraDimension;
-
-        return checkAABBCollision(
-            cameraX,
-            cameraY,
-            cameraWidth,
-            cameraHeight,
-            x,
-            y,
-            width,
-            height,
-        );
-    }
+    return checkAABBCollision(
+      cameraX,
+      cameraY,
+      cameraWidth,
+      cameraHeight,
+      x,
+      y,
+      width,
+      height,
+    );
+  }
 }

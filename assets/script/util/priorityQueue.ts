@@ -1,7 +1,7 @@
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node } from "cc";
 const { ccclass, property } = _decorator;
 
-@ccclass('PriorityQueue')
+@ccclass("PriorityQueue")
 export class PriorityQueue<T = number> {
   public items: T[] = [];
 

@@ -1,13 +1,29 @@
-import { _decorator, Component, Node, UITransform, Vec2, CCBoolean } from 'cc';
-import { ArenaManager } from './ArenaManager';
-import { Coordinate, TileMapData } from '../interface/map';
-import { ARENA_DEFAULT_OBJECT_SIZE, ARENA_DEFAULT_VALUE, ARENA_OBJECT_TYPE } from '../enum/arenaConfig';
-import { convertToArenaPos, getGridIdxByCoord } from '../util/arenaConvert';
-import { ObstacleSpriteRef } from '../interface/other';
-import { GameplayCamera } from '../object/gameplayCamera';
+import {
+  _decorator,
+  Component,
+  Node,
+  UITransform,
+  Vec2,
+  CCBoolean,
+  instantiate,
+} from "cc";
+import { Coordinate, TileMapData } from "../interface/map";
+import {
+  ARENA_DEFAULT_OBJECT_SIZE,
+  ARENA_DEFAULT_VALUE,
+  ARENA_OBJECT_TYPE,
+} from "../enum/arenaConfig";
+import {
+  convertArenaPosToCoord,
+  convertCoorToArenaPos,
+  convertPosToArenaPos,
+  getGridIdxByCoord,
+} from "../util/arenaConvert";
+import { ObstacleSpriteRef } from "../interface/other";
+import { GameplayCamera } from "../object/gameplayCamera";
 const { ccclass, property } = _decorator;
 
-@ccclass('ObstacleManager')
+@ccclass("ObstacleManager")
 export class ObstacleManager extends Component {
   private readonly OUTSIDE_GRASS_OPACITY = 255;
 
@@ -17,37 +33,18 @@ export class ObstacleManager extends Component {
   @property(Node)
   private readonly obstacleParent?: Node;
 
-  @property(Node)
-  private readonly unusedObsParent?: Node;
-
   @property(GameplayCamera)
   private readonly gameplayCamera?: GameplayCamera;
-
-  @property(ArenaManager)
-  private readonly arenaManager?: ArenaManager;
 
   private obstacleMap = new Array<TileMapData[]>();
 
   private spikes = new Array<ObstacleSpriteRef>();
 
-  //incrementally add grass
-  private onGrassLoadProcess: boolean = false;
-  private MAX_PROCESS_PER_FRAME = 20;
-  private tilePosArr: Array<Coordinate> = [];
-
-  start() {
-    /**
-     * Update sprite visibilities every SPRITE_UPDATE_VISIBILITY_INTERVAL
-     *
-     * If sprite is outside of camera, it will be returned to the pool
-     *
-     * TO-DO: experimental, previously this is called on every update() cycle
-     * We try to use schedule instead to improve performance
-     *
-     * Do note this may cause unexpected culling if camera is moving very fast, so may need to adjust
-     * interval / camera cull dimension properly
-     */
+  onLoad() {
+    this.clearObstacle();
+    this.initializeObstacleMap();
   }
+
   public initializeObstacleMap() {
     const { TILE } = ARENA_DEFAULT_OBJECT_SIZE;
     const cols = ARENA_DEFAULT_VALUE.WIDTH / TILE;
@@ -57,16 +54,15 @@ export class ObstacleManager extends Component {
       const colData: TileMapData[] = [];
       for (let x = 0; x < cols; x++) {
         const gridPos = getGridIdxByCoord({
-            x: x * TILE, 
-            y: y * TILE,
-        })
+          x: x * TILE,
+          y: y * TILE,
+        });
         const tileData: TileMapData = {
           type: ARENA_OBJECT_TYPE.NONE,
           playerIDList: [],
           x: x,
           y: y,
-          gridX: x,
-          gridY: y,
+          gridIdx: gridPos,
         };
         colData.push(tileData);
       }
@@ -79,8 +75,7 @@ export class ObstacleManager extends Component {
     this.spikes = [];
   }
 
-
-  private createSpikeInstance(coor: Coordinate) {
+  public createSpike(coor: Coordinate) {
     const { obstacleParent } = this;
     if (!obstacleParent) return;
     const spikeUiTransform = this.spike?.getComponent(UITransform);
@@ -89,11 +84,23 @@ export class ObstacleManager extends Component {
     this.setObstacleMapObject(coor.x, coor.y, ARENA_OBJECT_TYPE.SPIKE);
     const spike = {
       parent: obstacleParent,
-      position: new Vec2(coor.x, coor.y),
+      position: convertCoorToArenaPos(coor.x, coor.y),
       dimension: new Vec2(width, height),
       targetOpacity: 255,
     };
     this.spikes.push(spike);
+    this.instantiateSpike(coor);
+  }
+
+  public instantiateSpike(coor: Coordinate) {
+    if (!this.spike?.isValid) return;
+
+    const newSpike = instantiate(this.spike);
+    this.obstacleParent?.addChild(newSpike);
+
+    const pos = convertCoorToArenaPos(coor.x, coor.y);
+    newSpike.setPosition(pos.x, pos.y);
+    newSpike.active = true;
   }
 
   private getObstacleMapObjectType(x: number, y: number): ARENA_OBJECT_TYPE {
@@ -123,19 +130,18 @@ export class ObstacleManager extends Component {
     type: ARENA_OBJECT_TYPE,
     id?: number,
   ) {
-    const { TILE } = ARENA_DEFAULT_OBJECT_SIZE;
-    const idxX = Math.floor(x / TILE);
-    const idxY = Math.floor(y / TILE);
+    const idxX = Math.floor(x);
+    const idxY = Math.floor(y);
 
     this.obstacleMap[idxX][idxY].type = type;
   }
 
   public getObstacleList(obstacleType: ARENA_OBJECT_TYPE) {
     switch (obstacleType) {
-        case ARENA_OBJECT_TYPE.SPIKE:
-          return this.spikes;
-        default:
-          return this.spikes;
+      case ARENA_OBJECT_TYPE.SPIKE:
+        return this.spikes;
+      default:
+        return this.spikes;
     }
   }
 
@@ -161,46 +167,11 @@ export class ObstacleManager extends Component {
     }
   }
 
-  private returnObstacleSprite(
-    spriteRef: ObstacleSpriteRef,
-    _: ARENA_OBJECT_TYPE,
-  ) {
-    const { sprite } = spriteRef;
-
-    if (sprite) {
-      this.unusedObsParent.insertChild(sprite.node, 0);
-      spriteRef.parent = undefined;
-    }
-  }
-
-  public updateObstacleSpriteVisibility(
-    spriteRef: ObstacleSpriteRef,
-    obstacleType: ARENA_OBJECT_TYPE,
-  ) {
-    // check camera
-    const { position, dimension } = spriteRef;
-
-    const { x, y } = position;
-    const { x: width, y: height } = dimension;
-
-    const isInsideCamera = this.gameplayCamera?.isRectVisibleInCamera(
-      x,
-      y,
-      width,
-      height,
-    );
-
-    if (isInsideCamera) {
-      this.spawnObstacleSprite(spriteRef, obstacleType);
-    } else {
-      this.returnObstacleSprite(spriteRef, obstacleType);
-    }
-
-    return -1;
+  public isPosSafeForSpawn(coord: Coordinate) {
+    return (this.obstacleMap[coord.x][coord.y].type & (ARENA_OBJECT_TYPE.SPIKE | ARENA_OBJECT_TYPE.WALL)) === 0;
   }
 
   onDestroy(): void {
     this.clearObstacle();
-    this.tilePosArr = [];
   }
 }

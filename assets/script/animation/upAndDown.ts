@@ -1,10 +1,19 @@
-import { _decorator, CCFloat, Component, Node, Sprite, tween, Tween, Vec3 } from 'cc';
+import {
+  _decorator,
+  CCFloat,
+  Component,
+  Node,
+  Sprite,
+  tween,
+  Tween,
+  Vec3,
+} from "cc";
 const { ccclass, property } = _decorator;
 
-@ccclass('UpAndDown')
+@ccclass("UpAndDown")
 export class UpAndDown extends Component {
   @property(Sprite)
-  private sprite: Sprite |  null = null;
+  private sprite: Sprite | null = null;
 
   @property(CCFloat)
   private height: number = 20;
@@ -31,19 +40,27 @@ export class UpAndDown extends Component {
     this.animate(obj);
   }
 
-  private animate(obj: { val : number }) {
+  private animate(obj: { val: number }) {
     this.anim = tween(obj)
-    .to(this.duration, {
-      val: this.height * this.mult,
-    }, {
-      onUpdate: () => {
-        this.sprite.node.setPosition(this.initPos.x, Math.floor(this.initPos.y + Math.floor(obj.val / 2) * 2));
-      },
-      onComplete: () => {
-        this.mult *= -1;
-        this.animate(obj);
-      }
-    }).start();
+      .to(
+        this.duration,
+        {
+          val: this.height * this.mult,
+        },
+        {
+          onUpdate: () => {
+            this.sprite.node.setPosition(
+              this.initPos.x,
+              Math.floor(this.initPos.y + Math.floor(obj.val / 2) * 2),
+            );
+          },
+          onComplete: () => {
+            this.mult *= -1;
+            this.animate(obj);
+          },
+        },
+      )
+      .start();
   }
 
   protected onDestroy(): void {
@@ -53,5 +70,3 @@ export class UpAndDown extends Component {
     }
   }
 }
-
-

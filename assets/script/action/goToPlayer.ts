@@ -1,16 +1,16 @@
-import { _decorator, math, Vec2 } from 'cc';
-import { BaseAction } from './baseAction';
-import { getDistance } from '../util/aStar';
-import { BOT_ACTION } from '../enum/botAction';
-import { SnakeActionData, SnakeConfig } from '../interface/player';
-import { Movement } from '../interface/gameplay';
-import { ARENA_DEFAULT_OBJECT_SIZE } from '../enum/arenaConfig';
-import { PlannerFactor } from '../interface/ai';
-import { ACTION_SCORE } from '../enum/actionScore';
-import { BOT_CONFIG } from '../enum/botConfig';
+import { _decorator, math, Vec2 } from "cc";
+import { BaseAction } from "./baseAction";
+import { getDistance } from "../util/aStar";
+import { BOT_ACTION } from "../enum/botAction";
+import { SnakeActionData, SnakeConfig } from "../interface/player";
+import { Movement } from "../interface/gameplay";
+import { ARENA_DEFAULT_OBJECT_SIZE } from "../enum/arenaConfig";
+import { PlannerFactor } from "../interface/ai";
+import { ACTION_SCORE } from "../enum/actionScore";
+import { BOT_CONFIG } from "../enum/botConfig";
 const { ccclass, property } = _decorator;
 
-@ccclass('GoToPlayerAction')
+@ccclass("GoToPlayerAction")
 export class GoToPlayerAction extends BaseAction {
   protected cooldown = 2;
 
@@ -43,10 +43,7 @@ export class GoToPlayerAction extends BaseAction {
     this.startTime = performance.now();
   }
 
-  public run(
-    player: SnakeConfig,
-    data: SnakeActionData,
-  ): void {
+  public run(player: SnakeConfig, data: SnakeActionData): void {
     this.player = player;
     this.currData = data;
 
@@ -56,7 +53,7 @@ export class GoToPlayerAction extends BaseAction {
 
     if (!arenaManager?.isValid || !playerManager?.isValid) return;
 
-    let newDir: Vec2 | undefined = new Vec2 (0,0);
+    let newDir: Vec2 | undefined = new Vec2(0, 0);
 
     const mainPlayer: SnakeConfig | undefined = playerManager.getMainPlayer();
 
@@ -71,7 +68,13 @@ export class GoToPlayerAction extends BaseAction {
       // Be more accurate if near target
       this.resetPathData();
     } else {
-      this.headingLeft = this.isLeft(frontRay, new Vec2(currHeadPos.x - mainPlayerHead.x, currHeadPos.y - mainPlayerHead.y));
+      this.headingLeft = this.isLeft(
+        frontRay,
+        new Vec2(
+          currHeadPos.x - mainPlayerHead.x,
+          currHeadPos.y - mainPlayerHead.y,
+        ),
+      );
     }
 
     const maxVelo =
@@ -129,11 +132,11 @@ export class GoToPlayerAction extends BaseAction {
       y: mainPlayerSide.y,
     };
 
-    const path = this.getPath(
-      this.player.state.body[0].position,
-      targetCoord,
-      [mainPlayerSide, frontPlayerSide, otherPlayerSide],
-    );
+    const path = this.getPath(this.player.state.body[0].position, targetCoord, [
+      mainPlayerSide,
+      frontPlayerSide,
+      otherPlayerSide,
+    ]);
 
     if (!path || path.result.length <= 0) return;
 
@@ -151,8 +154,8 @@ export class GoToPlayerAction extends BaseAction {
     if (!player || !playerList) return this.score;
 
     if (this.firstTime) {
-      this.cooldown = BOT_CONFIG.AGGRESSIVE_COOLDOWN
-      this.aggresiveDuration = BOT_CONFIG.AGGRRESIVE_TIME
+      this.cooldown = BOT_CONFIG.AGGRESSIVE_COOLDOWN;
+      this.aggresiveDuration = BOT_CONFIG.AGGRRESIVE_TIME;
       this.firstTime = false;
       this.aggresiveEndsTStamp = this.cooldown > 0 ? this.cooldown * -1000 : 0;
     }
@@ -240,19 +243,16 @@ export class GoToPlayerAction extends BaseAction {
     currPlayer: SnakeConfig,
     currTime?: number,
   ) {
-    if (typeof currTime !== 'number') {
+    if (typeof currTime !== "number") {
       currTime = performance.now();
     }
 
     for (let i = 0; i < playerList.length; i++) {
       const player = playerList[i];
 
-      if (!player?.isBot || !player.isAlive)
-        continue;
+      if (!player?.isBot || !player.isAlive) continue;
 
-      const goToPlayerAct = player.possibleActions.get(
-        BOT_ACTION.CHASE_PLAYER,
-      );
+      const goToPlayerAct = player.possibleActions.get(BOT_ACTION.CHASE_PLAYER);
 
       if (
         goToPlayerAct instanceof GoToPlayerAction &&

@@ -1,15 +1,12 @@
-import { _decorator, Component, Node } from 'cc';
-import { BaseAction } from '../action/baseAction';
-import { PlannerFactor } from '../interface/ai';
-import { PriorityQueue } from './priorityQueue';
+import { _decorator, Component, Node } from "cc";
+import { BaseAction } from "../action/baseAction";
+import { PlannerFactor } from "../interface/ai";
+import { PriorityQueue } from "./priorityQueue";
 const { ccclass, property } = _decorator;
 
-@ccclass('BotPlanner')
+@ccclass("BotPlanner")
 export class BotPlanner extends Component {
-  public plan(
-    actions: BaseAction[],
-    factor: PlannerFactor,
-  ): BaseAction | null {
+  public plan(actions: BaseAction[], factor: PlannerFactor): BaseAction | null {
     const queue: PriorityQueue<BaseAction> = new PriorityQueue((a, b) => {
       return a.score > b.score;
     });

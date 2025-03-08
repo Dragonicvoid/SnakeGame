@@ -1,17 +1,15 @@
-import { _decorator, Component, game, math, Vec2 } from 'cc';
-import { FoodConfig } from '../interface/food';
-import { GridConfig, SpikeConfig } from '../interface/gridConfig';
-import { ARENA_DEFAULT_OBJECT_SIZE, ARENA_DEFAULT_VALUE, ARENA_OBJECT_TYPE } from '../enum/arenaConfig';
-import { FoodManager } from './foodManager';
-import { Coordinate } from '../interface/map';
-import { VISIBILITY_UPDATE_INTERVAL } from '../enum/other';
-import { getGridIdxByCoord } from '../util/arenaConvert';
-import { ObstacleManager } from './obstacleManager';
-import { ObstacleSpriteRef } from '../interface/other';
-import { GameplayCamera } from '../object/gameplayCamera';
+import { _decorator, Component, game, math, Vec2 } from "cc";
+import { FoodConfig } from "../interface/food";
+import { GridConfig, SpikeConfig } from "../interface/gridConfig";
+import { ARENA_DEFAULT_VALUE } from "../enum/arenaConfig";
+import { FoodManager } from "./foodManager";
+import { Coordinate } from "../interface/map";
+import { getGridIdxByCoord } from "../util/arenaConvert";
+import { ObstacleManager } from "./obstacleManager";
+import { GameplayCamera } from "../object/gameplayCamera";
 const { ccclass, property } = _decorator;
 
-@ccclass('GridManager')
+@ccclass("GridManager")
 export class GridManager extends Component {
   @property(ObstacleManager)
   public readonly obstacleManager?: ObstacleManager;
@@ -27,11 +25,15 @@ export class GridManager extends Component {
   private GRID_WIDTH = ARENA_DEFAULT_VALUE.GRID_WIDTH;
   private GRID_HEIGHT = ARENA_DEFAULT_VALUE.GRID_HEIGHT;
 
-  public setup(arenaWidth: number, arenaHeight: number) {
+  protected onLoad(): void {
+    this.setup();
+  }
+
+  public setup() {
     const { GRID_WIDTH, GRID_HEIGHT } = this;
 
-    const maxCol = Math.ceil(arenaWidth / GRID_WIDTH);
-    const maxRow = Math.ceil(arenaHeight / GRID_HEIGHT);
+    const maxCol = Math.ceil(ARENA_DEFAULT_VALUE.WIDTH / GRID_WIDTH);
+    const maxRow = Math.ceil(ARENA_DEFAULT_VALUE.HEIGHT / GRID_HEIGHT);
     this.gridList = [];
 
     for (let i = 0; i < maxRow; i++) {
@@ -50,11 +52,6 @@ export class GridManager extends Component {
         this.gridList.push(grid);
       }
     }
-
-    this.schedule(
-      this.updateSpriteVisibility,
-      VISIBILITY_UPDATE_INTERVAL,
-    );
   }
 
   public addSpike(spike: SpikeConfig) {
@@ -105,42 +102,11 @@ export class GridManager extends Component {
     }
   }
 
-  private updateSpriteVisibility() {
-    const { GRID_WIDTH, GRID_HEIGHT } = this;
-
-    this.gridList.forEach((grid) => {
-      const x = grid.x1 + GRID_WIDTH / 2;
-      const y = grid.y1 + GRID_HEIGHT / 2;
-      if (
-        this.gameplayCamera?.isRectVisibleInCamera(
-          x,
-          y,
-          GRID_WIDTH,
-          GRID_HEIGHT,
-        )
-      ) {
-        // grid.foods.forEach((food) => {
-        //   food.object.updateSpriteVisibility();
-        // });
-
-        grid.spikes.forEach((spike) => {
-          const conf: ObstacleSpriteRef = {
-            parent: null,
-            position: new Vec2(spike.position.x, spike.position.y),
-            dimension: new Vec2(ARENA_DEFAULT_OBJECT_SIZE.SPIKE, ARENA_DEFAULT_OBJECT_SIZE.SPIKE),
-            targetOpacity: 255,
-          }
-          this.obstacleManager?.updateObstacleSpriteVisibility(
-            conf,
-            ARENA_OBJECT_TYPE.SPIKE,
-          );
-        });
-      }
-    });
-  }
-
   private removeBodyOnGrid(coord: Coordinate, playerID: string) {
     const gridIdx = getGridIdxByCoord(coord);
+
+    if (gridIdx === undefined) return;
+
     const currGrid = this.gridList[gridIdx];
     if (currGrid) {
       const gridTotalBodies = currGrid.chickBodies.get(playerID);
@@ -154,6 +120,9 @@ export class GridManager extends Component {
 
   private addBodyOnGrid(coord: Coordinate, playerID: string) {
     const gridIdx = getGridIdxByCoord(coord);
+
+    if (gridIdx === undefined) return;
+
     const currGrid = this.gridList[gridIdx];
     if (currGrid) {
       const gridTotalBodies = currGrid.chickBodies.get(playerID);

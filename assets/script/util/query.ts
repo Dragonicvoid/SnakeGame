@@ -4,21 +4,21 @@ export function getQueryParam(param: string) {
 }
 
 export function shouldDebug() {
-  return getQueryParam('debug') === 'true';
+  return getQueryParam("debug") === "true";
 }
 
 export function shouldDrawPathfinding() {
-  return getQueryParam('drawPathfinding') === 'true';
+  return getQueryParam("drawPathfinding") === "true";
 }
 
 export function shouldDrawMap() {
-  return getQueryParam('drawMap') === 'true';
+  return getQueryParam("drawMap") === "true";
 }
 
 export function shouldDebugAction() {
-  return getQueryParam('debugAction') === 'true';
+  return getQueryParam("debugAction") === "true";
 }
 
 export function shouldDebugCone() {
-  return getQueryParam('debugCone') === 'true';
+  return getQueryParam("debugCone") === "true";
 }

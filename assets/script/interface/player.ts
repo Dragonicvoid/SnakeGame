@@ -10,48 +10,48 @@ import { Coordinate } from "./map";
 import { AStarSearchData } from "../util/aStar";
 
 export interface SnakeConfig {
-    id: string,
-    state: SnakeState;
-    movementDirection: Movement,
-    isBot: boolean,
-    isAlive: boolean,
-    possibleActions: Map<BOT_ACTION, BaseAction>,
-    action: BaseAction | undefined,
+  id: string;
+  state: SnakeState;
+  movementDirection: Movement;
+  isBot: boolean;
+  isAlive: boolean;
+  possibleActions: Map<BOT_ACTION, BaseAction>;
+  action: BaseAction | undefined;
 }
 
 export interface SnakeState {
-    body: SnakeBody[];
-    velocity: Vec2,
-    inDirectionChange: boolean,
-    debugData?: SnakeDebugData,
-    targetFood: {
-        food: FoodConfig,
-        timeTargeted: number,
-    },
+  body: SnakeBody[];
+  velocity: Vec2;
+  inDirectionChange: boolean;
+  debugData?: SnakeDebugData;
+  targetFood?: {
+    food: FoodConfig;
+    timeTargeted: number;
+  };
 }
 
 export interface SnakeBody {
-    position: Vec3,
+  position: Vec3;
 }
 
 export interface SnakeActionData<T = any> {
-    manager: Partial<ManagerActionData>,
-    detectedFood: FoodConfig,
-    detectedPlayer: number[],
-    detectedWall: number[],
-    config?: any,
+  manager: Partial<ManagerActionData>;
+  detectedFood?: FoodConfig;
+  detectedPlayer: number[];
+  detectedWall: number[];
+  config?: any;
 }
 
 export interface ManagerActionData {
-    playerManager: PlayerManager,
-    arenaManager: ArenaManager,
-    foodManager: FoodManager,
+  playerManager: PlayerManager;
+  arenaManager: ArenaManager;
+  foodManager: FoodManager;
 }
 
 export interface SnakeDebugData {
-    enemyID?: string;
-    actionName?: string;
-    enemyPath?: Coordinate[];
-    pathfindingState?: AStarSearchData;
-    possibleActions?: Map<BOT_ACTION, BaseAction>;
-  }
+  enemyID?: string;
+  actionName?: string;
+  enemyPath?: Coordinate[];
+  pathfindingState?: AStarSearchData;
+  possibleActions?: Map<BOT_ACTION, BaseAction>;
+}

@@ -1,15 +1,15 @@
-import { _decorator, Component, misc, Vec2 } from 'cc';
-import { AStar, AStarSearchData, getDistance } from '../util/aStar';
-import { SnakeActionData, SnakeConfig } from '../interface/player';
-import { FoodConfig, FoodState } from '../interface/food';
-import { Coordinate } from '../interface/map';
-import { BOT_CONFIG } from '../enum/botConfig';
-import { BOT_ACTION } from '../enum/botAction';
-import { Movement } from '../interface/gameplay';
-import { PlannerFactor } from '../interface/ai';
+import { _decorator, Component, misc, Vec2 } from "cc";
+import { AStar, AStarSearchData, getDistance } from "../util/aStar";
+import { SnakeActionData, SnakeConfig } from "../interface/player";
+import { FoodConfig, FoodState } from "../interface/food";
+import { Coordinate } from "../interface/map";
+import { BOT_CONFIG } from "../enum/botConfig";
+import { BOT_ACTION } from "../enum/botAction";
+import { Movement } from "../interface/gameplay";
+import { PlannerFactor } from "../interface/ai";
 const { ccclass, property } = _decorator;
 
-@ccclass('BaseAction')
+@ccclass("BaseAction")
 export class BaseAction extends Component {
   protected cooldown = 0;
 
@@ -54,10 +54,7 @@ export class BaseAction extends Component {
     return 0;
   }
 
-  public processBotMovementByTarget(
-    player: SnakeConfig,
-    target: Coordinate,
-  ) {
+  public processBotMovementByTarget(player: SnakeConfig, target: Coordinate) {
     const headCood = player.state.body[0].position;
     const dirTowardTarget = Math.atan2(
       headCood.y - target.y,
@@ -70,10 +67,7 @@ export class BaseAction extends Component {
     return new Vec2(targetVec.x, targetVec.y);
   }
 
-  public processBotMovementByFood(
-    player: SnakeConfig,
-    targetFood: FoodConfig,
-  ) {
+  public processBotMovementByFood(player: SnakeConfig, targetFood: FoodConfig) {
     const headCood = player.state.body[0].position;
     const foodPos = targetFood.state.position;
     const dirTowardFood = Math.atan2(
@@ -165,14 +159,11 @@ export class BaseAction extends Component {
 
     newDir = new Vec2(
       Math.ceil(botNewDir.x * 100),
-      Math.ceil(botNewDir.y * 100)
+      Math.ceil(botNewDir.y * 100),
     );
 
     if (newDir) {
-      this.player.movementDirection.vector = new Vec2(
-        newDir.x,
-        newDir.y,
-    );
+      this.player.movementDirection.vector = new Vec2(newDir.x, newDir.y);
     }
 
     const targetDir = {
@@ -253,7 +244,7 @@ export class BaseAction extends Component {
       curr,
       target,
       this.prevPathfindingData,
-      this.player?.id || '',
+      this.player?.id || "",
       predefinedPath,
     );
 

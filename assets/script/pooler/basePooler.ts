@@ -1,59 +1,64 @@
-import { _decorator, CCInteger, Component, instantiate, Node, Prefab } from 'cc';
+import {
+  _decorator,
+  CCInteger,
+  Component,
+  instantiate,
+  Node,
+  Prefab,
+} from "cc";
 const { ccclass, property } = _decorator;
 
-@ccclass('BasePooler')
+@ccclass("BasePooler")
 export class BasePooler extends Component {
-    @property(Node)
-    private parent: Node | null = null;
+  @property(Node)
+  private parent: Node | null = null;
 
-    @property(Prefab)
-    private food: Prefab | null = null;
+  @property(Prefab)
+  private food: Prefab | null = null;
 
-    @property(CCInteger)
-    private initial: number = 20;
+  @property(CCInteger)
+  private initial: number = 20;
 
-    private pool : Node[] = [];
+  private pool: Node[] = [];
 
-    protected onLoad(): void {
-        if (!this.parent?.isValid) {
-            this.parent = this.node;
-        }
+  protected onLoad(): void {
+    if (!this.parent?.isValid) {
+      this.parent = this.node;
+    }
+  }
+
+  protected start(): void {
+    for (let i = 0; i < this.initial; i++) {
+      this.createNew();
+    }
+  }
+
+  public getNode(): Node | null {
+    if (this.pool.length <= 0) {
+      this.createNew();
     }
 
-    protected start(): void {
-        for(let i = 0; i < this.initial; i++) {
-            this.createNew();
-        }
-    }
+    const obj = this.pool.pop();
 
-    public getNode(): Node | null {
-        if (this.pool.length <= 0 ) {
-            this.createNew();
-        }
+    if (!obj?.isValid) return null;
 
-        const obj = this.pool.pop();
+    return obj;
+  }
 
-        if (!obj?.isValid) return null;
+  private createNew(): Node | null {
+    if (!this.food?.isValid) return null;
 
-        return obj;
-    }
+    const obj = instantiate(this.food);
+    this.returnNode(obj);
 
-    private createNew(): Node | null {
-        if (!this.food?.isValid) return null;
+    return obj;
+  }
 
-        const obj = instantiate(this.food);
-        this.returnNode(obj);
+  public returnNode(node: Node | null) {
+    if (!node?.isValid) return;
 
-        return obj;
-    }
-
-    public returnNode(node: Node | null) {
-        if (!node?.isValid) return;
-
-        node.active = false;
-        node.parent = this.parent;
-        this.pool.push(node);
-    }
+    node.active = false;
+    node.parent = this.parent;
+    this.pool.push(node);
+  }
 }
-
-

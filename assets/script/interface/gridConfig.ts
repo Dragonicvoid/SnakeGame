@@ -14,7 +14,7 @@ export type GridConfig = {
 };
 
 export type SpikeConfig = {
-    sprite: Sprite,
-    gridIndex: number,
-    position: Vec3,
-}
+  sprite: Sprite;
+  gridIndex: number;
+  position: Vec3;
+};
