@@ -168,7 +168,11 @@ export class ObstacleManager extends Component {
   }
 
   public isPosSafeForSpawn(coord: Coordinate) {
-    return (this.obstacleMap[coord.x][coord.y].type & (ARENA_OBJECT_TYPE.SPIKE | ARENA_OBJECT_TYPE.WALL)) === 0;
+    return (
+      (this.obstacleMap[coord.x][coord.y].type &
+        (ARENA_OBJECT_TYPE.SPIKE | ARENA_OBJECT_TYPE.WALL)) ===
+      0
+    );
   }
 
   onDestroy(): void {

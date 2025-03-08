@@ -30,11 +30,11 @@ export function convertCoorToArenaPos(x: number, y: number): Vec2 {
 
 export function convertPosToCoord(x: number, y: number): Coordinate {
   const coord = {
-    x: Math.floor(((x) / ARENA_DEFAULT_OBJECT_SIZE.TILE)),
-    y: Math.floor(((y) / ARENA_DEFAULT_OBJECT_SIZE.TILE)),
+    x: Math.floor(x / ARENA_DEFAULT_OBJECT_SIZE.TILE),
+    y: Math.floor(y / ARENA_DEFAULT_OBJECT_SIZE.TILE),
   };
 
-  return {x: coord.x, y: coord.y};
+  return { x: coord.x, y: coord.y };
 }
 
 export function convertArenaPosToCoord(x: number, y: number): Coordinate {
@@ -44,11 +44,11 @@ export function convertArenaPosToCoord(x: number, y: number): Coordinate {
   );
 
   const coord = {
-    x: Math.floor(((x + offset.x) / ARENA_DEFAULT_OBJECT_SIZE.TILE)),
-    y: Math.floor(((y + offset.y) / ARENA_DEFAULT_OBJECT_SIZE.TILE)),
+    x: Math.floor((x + offset.x) / ARENA_DEFAULT_OBJECT_SIZE.TILE),
+    y: Math.floor((y + offset.y) / ARENA_DEFAULT_OBJECT_SIZE.TILE),
   };
 
-  return {x: coord.x, y: coord.y};
+  return { x: coord.x, y: coord.y };
 }
 
 export function getGridIdxByCoord(coord: Coordinate) {

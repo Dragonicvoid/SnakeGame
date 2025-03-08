@@ -34,7 +34,7 @@ export class ArenaManager extends Component {
     for (let y = map.col - 1; y >= 0; y--) {
       for (let x = 0; x < map.row; x++) {
         const idx = y * map.row + x;
-        this.handleTileByType(map.maps[idx], { x: x, y: (map.col - 1) - y });
+        this.handleTileByType(map.maps[idx], { x: x, y: map.col - 1 - y });
       }
     }
   }
