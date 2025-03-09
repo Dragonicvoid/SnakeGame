@@ -207,5 +207,8 @@
     "flags": {
       "LOAD_SPINE_MANUALLY": false
     }
+  },
+  "macroConfig": {
+    "BATCHER2D_MEM_INCREMENT": 144
   }
 }

@@ -1,0 +1,99 @@
+// Copyright (c) 2017-2020 Xiamen Yaji Software Co., Ltd.
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: sprite-vs:vert
+      frag: sprite-fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties: &props
+        yratio: { value: 0.0 }
+        threshold: { value: 80. }
+        reverseRes: { value: [0.0, 0.0], editor: { type: vec2 } }
+}%
+
+CCProgram sprite-vs %{
+  precision highp float;
+  #include <cc-global>
+
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec2 a_next_pos;
+  in vec2 a_prev_pos;
+
+  out vec2 v_corner;
+  out vec2 v_center;
+  out float v_h_max;
+  out float v_d_max;
+
+  uniform Const {
+    vec2 reverseRes;
+    float yratio;
+  };
+
+  vec4 vert () {
+    vec4 pos = vec4(a_position.xy, 0., 1.);
+
+    float dPrev = 0.;
+    float hPrev = 0.;
+    if (a_prev_pos.x != 0. || a_prev_pos.y != 0.) {
+      vec2 u = vec2(pos.x - a_prev_pos.x, pos.y - a_prev_pos.y);
+      vec2 v = vec2(a_texCoord.x - a_prev_pos.x, a_texCoord.y - a_prev_pos.y);
+
+      hPrev = min(1. , max(0., (u.x * v.x, u.y * v.y) / (v.x * v.x + v.y * v.y)));
+      vec2 proj = v * hPrev;
+      vec2 projPlusA = proj + a_prev_pos;
+      dPrev = sqrt((pos.x - projPlusA.x) * (pos.x - projPlusA.x) + (pos.y - projPlusA.y) * (pos.y - projPlusA.y));
+    }
+
+    float dNext = 0.;
+    float hNext = 0.;
+    if (a_next_pos.x != 0. || a_next_pos.y != 0.) {
+      vec2 u = vec2(pos.x - a_texCoord.x, pos.y - a_texCoord.y);
+      vec2 v = vec2(a_next_pos.x - a_texCoord.x, a_next_pos.y - a_texCoord.y);
+
+      hNext = min(1. , max(0., (u.x * v.x, u.y * v.y) / (v.x * v.x + v.y * v.y)));
+      vec2 proj = v * hNext;
+      vec2 projPlusA = proj + a_texCoord;
+      dNext = sqrt((pos.x - projPlusA.x) * (pos.x - projPlusA.x) + (pos.y - projPlusA.y) * (pos.y - projPlusA.y));
+    }
+
+    v_h_max = max(hPrev, hNext);
+    v_d_max = max(dPrev, dNext);
+    v_corner = a_position.xy * reverseRes;
+    v_center = a_texCoord.xy * reverseRes;
+
+    v_corner.y *= yratio;
+    v_center.y *= yratio;
+
+    return cc_matViewProj * pos;
+  }
+}%
+
+CCProgram sprite-fs %{
+  precision highp float;
+  #include <builtin/internal/embedded-alpha>
+
+  in vec2 v_corner;
+  in vec2 v_center;
+  in float v_h_max;
+  in float v_d_max;
+
+  uniform Const2 {
+    float threshold;
+  };
+
+  vec4 frag () {
+    vec4 o = vec4(1., 1., 1., v_d_max);
+    return o;
+  }
+}%

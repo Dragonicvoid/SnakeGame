@@ -31,6 +31,10 @@
     {
       "name": "GAMEPLAY",
       "value": 1
+    },
+    {
+      "name": "SNAKE",
+      "value": 2
     }
   ]
 }
