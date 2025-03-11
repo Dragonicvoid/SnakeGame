@@ -16,6 +16,7 @@ const { ccclass, property } = _decorator;
 export const vfmtPosCoord = [
   new gfx.Attribute(gfx.AttributeName.ATTR_POSITION, gfx.Format.RGB32F),
   new gfx.Attribute(gfx.AttributeName.ATTR_TEX_COORD, gfx.Format.RG32F),
+  new gfx.Attribute("a_center", gfx.Format.RG32F),
   new gfx.Attribute("a_next_pos", gfx.Format.RG32F),
   new gfx.Attribute("a_prev_pos", gfx.Format.RG32F),
 ];
@@ -82,6 +83,8 @@ export class SnakeAssembler implements IAssembler {
       vbuf[vertexOffset++] = x - r + m12 - halfUITrans.x;
       vbuf[vertexOffset++] = y - r + m13 - halfUITrans.y;
       vbuf[vertexOffset++] = 0 + m14;
+      vbuf[vertexOffset++] = 0;
+      vbuf[vertexOffset++] = 0;
       vbuf[vertexOffset++] = x;
       vbuf[vertexOffset++] = y;
       vbuf[vertexOffset++] = nextX;
@@ -93,6 +96,8 @@ export class SnakeAssembler implements IAssembler {
       vbuf[vertexOffset++] = x + r + m12 - halfUITrans.x;
       vbuf[vertexOffset++] = y - r + m13 - halfUITrans.y;
       vbuf[vertexOffset++] = 0 + m14;
+      vbuf[vertexOffset++] = 1;
+      vbuf[vertexOffset++] = 0;
       vbuf[vertexOffset++] = x;
       vbuf[vertexOffset++] = y;
       vbuf[vertexOffset++] = nextX;
@@ -104,6 +109,8 @@ export class SnakeAssembler implements IAssembler {
       vbuf[vertexOffset++] = x - r + m12 - halfUITrans.x;
       vbuf[vertexOffset++] = y + r + m13 - halfUITrans.y;
       vbuf[vertexOffset++] = 0 + m14;
+      vbuf[vertexOffset++] = 0;
+      vbuf[vertexOffset++] = 1;
       vbuf[vertexOffset++] = x;
       vbuf[vertexOffset++] = y;
       vbuf[vertexOffset++] = nextX;
@@ -115,6 +122,8 @@ export class SnakeAssembler implements IAssembler {
       vbuf[vertexOffset++] = x + r + m12 - halfUITrans.x;
       vbuf[vertexOffset++] = y + r + m13 - halfUITrans.y;
       vbuf[vertexOffset++] = 0 + m14;
+      vbuf[vertexOffset++] = 1;
+      vbuf[vertexOffset++] = 1;
       vbuf[vertexOffset++] = x;
       vbuf[vertexOffset++] = y;
       vbuf[vertexOffset++] = nextX;

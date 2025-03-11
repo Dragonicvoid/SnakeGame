@@ -17,7 +17,8 @@ CCEffect %{
         cullMode: none
       properties: &props
         yratio: { value: 0.0 }
-        threshold: { value: 80. }
+        boxSize: { value: 20. }
+        radius: { value: 10. }
         reverseRes: { value: [0.0, 0.0], editor: { type: vec2 } }
 }%
 
@@ -27,52 +28,38 @@ CCProgram sprite-vs %{
 
   in vec3 a_position;
   in vec2 a_texCoord;
+  in vec2 a_center;
   in vec2 a_next_pos;
   in vec2 a_prev_pos;
 
-  out vec2 v_corner;
+  out float v_radius;
   out vec2 v_center;
-  out float v_h_max;
-  out float v_d_max;
+  out vec2 uv;
+  out vec2 v_next_pos_norm;
+  out vec2 v_prev_pos_norm;
 
   uniform Const {
     vec2 reverseRes;
     float yratio;
+    float radius;
   };
 
   vec4 vert () {
     vec4 pos = vec4(a_position.xy, 0., 1.);
 
-    float dPrev = 0.;
-    float hPrev = 0.;
-    if (a_prev_pos.x != 0. || a_prev_pos.y != 0.) {
-      vec2 u = vec2(pos.x - a_prev_pos.x, pos.y - a_prev_pos.y);
-      vec2 v = vec2(a_texCoord.x - a_prev_pos.x, a_texCoord.y - a_prev_pos.y);
-
-      hPrev = min(1. , max(0., (u.x * v.x, u.y * v.y) / (v.x * v.x + v.y * v.y)));
-      vec2 proj = v * hPrev;
-      vec2 projPlusA = proj + a_prev_pos;
-      dPrev = sqrt((pos.x - projPlusA.x) * (pos.x - projPlusA.x) + (pos.y - projPlusA.y) * (pos.y - projPlusA.y));
-    }
-
-    float dNext = 0.;
-    float hNext = 0.;
+    v_next_pos_norm = vec2(0., 0.);
     if (a_next_pos.x != 0. || a_next_pos.y != 0.) {
-      vec2 u = vec2(pos.x - a_texCoord.x, pos.y - a_texCoord.y);
-      vec2 v = vec2(a_next_pos.x - a_texCoord.x, a_next_pos.y - a_texCoord.y);
-
-      hNext = min(1. , max(0., (u.x * v.x, u.y * v.y) / (v.x * v.x + v.y * v.y)));
-      vec2 proj = v * hNext;
-      vec2 projPlusA = proj + a_texCoord;
-      dNext = sqrt((pos.x - projPlusA.x) * (pos.x - projPlusA.x) + (pos.y - projPlusA.y) * (pos.y - projPlusA.y));
+      v_next_pos_norm = (a_next_pos - a_center) / radius;
     }
 
-    v_h_max = max(hPrev, hNext);
-    v_d_max = max(dPrev, dNext);
-    v_corner = a_position.xy * reverseRes;
-    v_center = a_texCoord.xy * reverseRes;
+    v_prev_pos_norm = vec2(0., 0.);
+    if (a_prev_pos.x != 0. || a_prev_pos.y != 0.) {
+      v_prev_pos_norm = (a_prev_pos - a_center) / radius;
+    }
 
-    v_corner.y *= yratio;
+    v_radius = radius;
+    v_center = a_center;
+    uv = a_texCoord;
     v_center.y *= yratio;
 
     return cc_matViewProj * pos;
@@ -83,17 +70,78 @@ CCProgram sprite-fs %{
   precision highp float;
   #include <builtin/internal/embedded-alpha>
 
-  in vec2 v_corner;
+  in float v_radius;
   in vec2 v_center;
-  in float v_h_max;
-  in float v_d_max;
+  in vec2 uv;
+  in vec2 v_next_pos_norm;
+  in vec2 v_prev_pos_norm;
 
   uniform Const2 {
-    float threshold;
+    float boxSize;
   };
 
+  float when_neq(float x, float y) {
+    return abs(sign(x - y));
+  }
+
+  float when_eq(float x, float y) {
+    return 1.0 - abs(sign(x - y));
+  }
+
+  float when_gt(float x, float y) {
+    return max(sign(x - y), 0.0);
+  }
+
+  float when_lt(float x, float y) {
+    return max(sign(y - x), 0.0);
+  }
+
+  float when_ge(float x, float y) {
+    return 1.0 - when_lt(x, y);
+  }
+
+  float when_le(float x, float y) {
+    return 1.0 - when_gt(x, y);
+  }
+
+  float and(float a, float b) {
+    return a * b;
+  }
+
+  float neg(float a) {
+    return 1.0 - a;
+  }
+
+  float rand(float n) {
+    return fract(sin(n) * 56.);
+  }
+
   vec4 frag () {
-    vec4 o = vec4(1., 1., 1., v_d_max);
+    vec2 uv0 = (uv * 2.) - 1.;
+    vec4 o = vec4(1., 1., 1., 1.);
+
+    float dPrev = 1.;
+    float hClampPrev = 1.;
+    vec2 u = uv0;
+    vec2 v = v_prev_pos_norm;
+    float hPrev = (u.x * v.x + u.y * v.y) / (v.x * v.x + v.y * v.y);
+    hClampPrev = min(1. , max(0., hPrev));
+    vec2 proj = v * hClampPrev;
+    dPrev = distance(uv0, proj);
+
+    float dNext = 1.;
+    float hClampNext = 1.;
+    u = uv0;
+    v = v_next_pos_norm;
+    float hNext = (u.x * v.x + u.y * v.y) / (v.x * v.x + v.y * v.y);
+    hClampNext = min(1. , max(0., hNext));
+    proj = v * hClampNext;
+    dNext = distance(uv0, proj);
+
+    float boundary = v_radius / boxSize;
+    float minDist = min(dPrev, dNext);
+    float centerDist = distance(uv0, vec2(0., 0.));
+    o = vec4(1., step( 0.2, centerDist), 1., (1.0 - step(boundary, minDist)));
     return o;
   }
 }%
