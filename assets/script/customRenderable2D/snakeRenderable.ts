@@ -73,13 +73,6 @@ export class SnakeRenderable extends UIRenderer {
   start() {
     profiler.hideStats();
 
-    // this.snakesBody = [
-    //   { position: new Vec3(257, 408 ,0) },
-    //   { position: new Vec3(235, 417 ,0) },
-    //   { position: new Vec3(245, 416 ,0) },
-    //   { position: new Vec3(226, 421 ,0) },
-    // ]
-
     if (!EDITOR) {
       this.schedule(() => {
         this.markForUpdateRenderData();
@@ -116,10 +109,10 @@ export class SnakeRenderable extends UIRenderer {
             prevBodies = newBody;
           }
         }
-
+  
         this.snakesBody = bodies;
       }, 1.0);
-
+  
       this.scheduleOnce(() => {
         this.setCustomMat();
       });
