@@ -73,18 +73,45 @@ export class SnakeRenderable extends UIRenderer {
   start() {
     profiler.hideStats();
 
+    this.snakesBody = [
+      {
+        position: new Vec3(350, 350, 0),
+        radius: 20,
+      },
+      {
+        position: new Vec3(350, 315, 0),
+        radius: 15,
+      },
+      {
+        position: new Vec3(350, 290, 0),
+        radius: 10,
+      },
+      {
+        position: new Vec3(350, 275, 0),
+        radius: 5,
+      }
+    ]
+
     if (!EDITOR) {
+      let angleDist = 0;
+      const totalBodies = Math.floor(20);
+      const predifinedPos = new Vec3(350, 350, 0);
+
       this.schedule(() => {
         this.markForUpdateRenderData();
-        const totalBodies = Math.floor(Math.random() * 10);
         const bodies: SnakeBody[] = [];
-        const radius = ARENA_DEFAULT_OBJECT_SIZE.SNAKE;
         let prevBodies: SnakeBody | null = null;
+        const maxRad = ARENA_DEFAULT_OBJECT_SIZE.SNAKE;
+        const radiusReducer = Math.min(ARENA_DEFAULT_OBJECT_SIZE.SNAKE / (totalBodies + 1), 5);
+
         for (let i = 0; i < totalBodies; i++) {
+          const angle = Math.random() * 180 * (Math.PI / 180);
+          const radius = maxRad - i * radiusReducer;
           if (!prevBodies) {
-            const newPos = new Vec3(Math.random() * ARENA_DEFAULT_VALUE.WIDTH, Math.random() * ARENA_DEFAULT_VALUE.HEIGHT, 0);
+            const newPos = predifinedPos.clone();
             const newBody = {
               position: new Vec3(Math.floor(newPos.x), Math.floor(newPos.y), 0),
+              radius: maxRad - i * radiusReducer,
             };
             bodies.push(newBody);
             prevBodies = newBody;
@@ -92,7 +119,6 @@ export class SnakeRenderable extends UIRenderer {
             const prevPos: Vec3 = prevBodies.position;
             const posVec = new Vec3(0, radius, 0);
             let newPos = prevPos.clone();
-            const angle = Math.random() * 180 * (Math.PI / 180);
             const rotMat = [
               [Math.cos(angle), -Math.sin(angle)],
               [Math.sin(angle), Math.cos(angle)],
@@ -104,15 +130,16 @@ export class SnakeRenderable extends UIRenderer {
             );
             const newBody = {
               position: new Vec3(Math.floor(newPos.x), Math.floor(newPos.y), 0),
+              radius: maxRad - i * radiusReducer,
             };
             bodies.push(newBody);
             prevBodies = newBody;
           }
         }
-  
+
         this.snakesBody = bodies;
-      }, 1.0);
-  
+      }, 2.);
+
       this.scheduleOnce(() => {
         this.setCustomMat();
       });

@@ -17,8 +17,8 @@ export const vfmtPosCoord = [
   new gfx.Attribute(gfx.AttributeName.ATTR_POSITION, gfx.Format.RGB32F),
   new gfx.Attribute(gfx.AttributeName.ATTR_TEX_COORD, gfx.Format.RG32F),
   new gfx.Attribute("a_center", gfx.Format.RG32F),
-  new gfx.Attribute("a_next_pos", gfx.Format.RG32F),
-  new gfx.Attribute("a_prev_pos", gfx.Format.RG32F),
+  new gfx.Attribute("a_next_pos", gfx.Format.RGB32F),
+  new gfx.Attribute("a_prev_pos", gfx.Format.RGB32F),
 ];
 
 @ccclass("SnakeAssembler")
@@ -44,8 +44,6 @@ export class SnakeAssembler implements IAssembler {
     let vertexOffset = renderData.vertexCount;
     let indicesOffset = renderData.indexCount;
     renderData.request(verticesCount, indicesCount);
-    let r = ARENA_DEFAULT_OBJECT_SIZE.SNAKE * 2;
-
     const m = com.node.worldMatrix;
 
     const m00 = m.m00;
@@ -72,64 +70,77 @@ export class SnakeAssembler implements IAssembler {
     for (let i = 0; i < bodiesCount; i++) {
       let prevX = com.snakesBody[i - 1]?.position.x ?? 0;
       let prevY = com.snakesBody[i - 1]?.position.y ?? 0;
+      let prevR = com.snakesBody[i - 1]?.radius ?? 0;
 
       let x = com.snakesBody[i].position.x;
       let y = com.snakesBody[i].position.y;
+      let r = com.snakesBody[i].radius;
 
       let nextX = com.snakesBody[i + 1]?.position.x ?? 0;
       let nextY = com.snakesBody[i + 1]?.position.y ?? 0;
+      let nextR = com.snakesBody[i + 1]?.radius ?? 0;
+
+      const boxSize = r;
 
       // left-bottom
-      vbuf[vertexOffset++] = x - r + m12 - halfUITrans.x;
-      vbuf[vertexOffset++] = y - r + m13 - halfUITrans.y;
-      vbuf[vertexOffset++] = 0 + m14;
+      vbuf[vertexOffset++] = x - boxSize + m12 - halfUITrans.x;
+      vbuf[vertexOffset++] = y - boxSize + m13 - halfUITrans.y;
+      vbuf[vertexOffset++] = r;
       vbuf[vertexOffset++] = 0;
       vbuf[vertexOffset++] = 0;
       vbuf[vertexOffset++] = x;
       vbuf[vertexOffset++] = y;
       vbuf[vertexOffset++] = nextX;
       vbuf[vertexOffset++] = nextY;
+      vbuf[vertexOffset++] = nextR;
       vbuf[vertexOffset++] = prevX;
       vbuf[vertexOffset++] = prevY;
+      vbuf[vertexOffset++] = prevR;
 
       // right-bottom
-      vbuf[vertexOffset++] = x + r + m12 - halfUITrans.x;
-      vbuf[vertexOffset++] = y - r + m13 - halfUITrans.y;
-      vbuf[vertexOffset++] = 0 + m14;
+      vbuf[vertexOffset++] = x + boxSize + m12 - halfUITrans.x;
+      vbuf[vertexOffset++] = y - boxSize + m13 - halfUITrans.y;
+      vbuf[vertexOffset++] = r;
       vbuf[vertexOffset++] = 1;
       vbuf[vertexOffset++] = 0;
       vbuf[vertexOffset++] = x;
       vbuf[vertexOffset++] = y;
       vbuf[vertexOffset++] = nextX;
       vbuf[vertexOffset++] = nextY;
+      vbuf[vertexOffset++] = nextR;
       vbuf[vertexOffset++] = prevX;
       vbuf[vertexOffset++] = prevY;
+      vbuf[vertexOffset++] = prevR;
 
       // left-top
-      vbuf[vertexOffset++] = x - r + m12 - halfUITrans.x;
-      vbuf[vertexOffset++] = y + r + m13 - halfUITrans.y;
-      vbuf[vertexOffset++] = 0 + m14;
+      vbuf[vertexOffset++] = x - boxSize + m12 - halfUITrans.x;
+      vbuf[vertexOffset++] = y + boxSize + m13 - halfUITrans.y;
+      vbuf[vertexOffset++] = r;
       vbuf[vertexOffset++] = 0;
       vbuf[vertexOffset++] = 1;
       vbuf[vertexOffset++] = x;
       vbuf[vertexOffset++] = y;
       vbuf[vertexOffset++] = nextX;
       vbuf[vertexOffset++] = nextY;
+      vbuf[vertexOffset++] = nextR;
       vbuf[vertexOffset++] = prevX;
       vbuf[vertexOffset++] = prevY;
+      vbuf[vertexOffset++] = prevR;
 
       // right-top
-      vbuf[vertexOffset++] = x + r + m12 - halfUITrans.x;
-      vbuf[vertexOffset++] = y + r + m13 - halfUITrans.y;
-      vbuf[vertexOffset++] = 0 + m14;
+      vbuf[vertexOffset++] = x + boxSize + m12 - halfUITrans.x;
+      vbuf[vertexOffset++] = y + boxSize + m13 - halfUITrans.y;
+      vbuf[vertexOffset++] = r;
       vbuf[vertexOffset++] = 1;
       vbuf[vertexOffset++] = 1;
       vbuf[vertexOffset++] = x;
       vbuf[vertexOffset++] = y;
       vbuf[vertexOffset++] = nextX;
       vbuf[vertexOffset++] = nextY;
+      vbuf[vertexOffset++] = nextR;
       vbuf[vertexOffset++] = prevX;
       vbuf[vertexOffset++] = prevY;
+      vbuf[vertexOffset++] = prevR;
     }
 
     // fill indices

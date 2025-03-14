@@ -9,7 +9,7 @@ export enum ARENA_DEFAULT_VALUE {
 export enum ARENA_DEFAULT_OBJECT_SIZE {
   FOOD = 10,
   SPIKE = 20,
-  SNAKE = 10,
+  SNAKE = 20,
   TILE = 20,
 }
 

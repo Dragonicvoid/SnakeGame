@@ -32,6 +32,7 @@ export interface SnakeState {
 
 export interface SnakeBody {
   position: Vec3;
+  radius: number
 }
 
 export interface SnakeActionData<T = any> {
