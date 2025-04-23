@@ -79,15 +79,15 @@ export class SnakeRenderable extends UIRenderer {
         radius: 20,
       },
       {
-        position: new Vec3(350, 315, 0),
+        position: new Vec3(335, 315, 0),
         radius: 15,
       },
       {
-        position: new Vec3(350, 290, 0),
+        position: new Vec3(310, 290, 0),
         radius: 10,
       },
       {
-        position: new Vec3(350, 275, 0),
+        position: new Vec3(295, 275, 0),
         radius: 5,
       }
     ]

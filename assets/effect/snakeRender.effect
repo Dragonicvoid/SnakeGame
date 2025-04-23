@@ -139,7 +139,7 @@ CCProgram sprite-fs %{
     float centerDist = distance(uv0, vec2(0., 0.));
 
     float textureDistX = 1. - (boundary - minDist);
-    float textureDistY = when_lt(dNext, dPrev) * hClampNext + when_ge(dNext, dPrev) * hClampPrev;
+    float textureDistY = when_lt(dNext, dPrev) * (1.0 - hClampNext) + when_ge(dNext, dPrev) * hClampPrev;
 
     o = vec4(vec3(textureDistX, textureDistY, 0.), (1.0 - step(boundary, minDist)));
     return o;
