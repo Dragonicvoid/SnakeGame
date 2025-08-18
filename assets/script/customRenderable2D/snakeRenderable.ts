@@ -1,21 +1,13 @@
 import {
-  _decorator,
-  Camera,
-  IAssembler,
-  profiler,
-  RenderTexture,
-  Sprite,
-  SpriteFrame,
-  sys,
-  UIRenderer,
-  UITransform,
-  Vec2,
-  Vec3,
-} from "cc";
-import { EDITOR } from "cc/env";
-import { SnakeAssembler } from "../customAssembler/snakeAssembler";
-import { SnakeBody } from "../interface/player";
-import { ARENA_DEFAULT_OBJECT_SIZE, ARENA_DEFAULT_VALUE } from "../enum/arenaConfig";
+    _decorator, Camera, IAssembler, profiler, RenderTexture, Sprite, SpriteFrame, sys, Texture2D,
+    UIRenderer, UITransform, Vec2, Vec3
+} from 'cc';
+import { EDITOR } from 'cc/env';
+
+import { SnakeAssembler } from '../customAssembler/snakeAssembler';
+import { ARENA_DEFAULT_OBJECT_SIZE, ARENA_DEFAULT_VALUE } from '../enum/arenaConfig';
+import { SnakeBody } from '../interface/player';
+
 const { ccclass, property } = _decorator;
 
 @ccclass("SnakeRenderable")
@@ -29,6 +21,9 @@ export class SnakeRenderable extends UIRenderer {
 
   @property(Sprite)
   public renderSprite: Sprite | null = null;
+
+  @property(Texture2D)
+  public bodyTexture: Texture2D | null = null;
 
   public snakesBody: SnakeBody[] = [];
 
@@ -76,21 +71,21 @@ export class SnakeRenderable extends UIRenderer {
     this.snakesBody = [
       {
         position: new Vec3(350, 350, 0),
-        radius: 20,
+        radius: ARENA_DEFAULT_OBJECT_SIZE.SNAKE,
       },
       {
-        position: new Vec3(335, 315, 0),
-        radius: 15,
+        position: new Vec3(350, 350 - 1 * ARENA_DEFAULT_OBJECT_SIZE.SNAKE, 0),
+        radius: ARENA_DEFAULT_OBJECT_SIZE.SNAKE,
       },
       {
-        position: new Vec3(310, 290, 0),
-        radius: 10,
+        position: new Vec3(350, 350 - 2 * ARENA_DEFAULT_OBJECT_SIZE.SNAKE, 0),
+        radius: ARENA_DEFAULT_OBJECT_SIZE.SNAKE,
       },
       {
-        position: new Vec3(295, 275, 0),
-        radius: 5,
-      }
-    ]
+        position: new Vec3(350, 350 - 3 * ARENA_DEFAULT_OBJECT_SIZE.SNAKE, 0),
+        radius: ARENA_DEFAULT_OBJECT_SIZE.SNAKE,
+      },
+    ];
 
     if (!EDITOR) {
       let angleDist = 0;
@@ -102,16 +97,19 @@ export class SnakeRenderable extends UIRenderer {
         const bodies: SnakeBody[] = [];
         let prevBodies: SnakeBody | null = null;
         const maxRad = ARENA_DEFAULT_OBJECT_SIZE.SNAKE;
-        const radiusReducer = Math.min(ARENA_DEFAULT_OBJECT_SIZE.SNAKE / (totalBodies + 1), 5);
+        const radiusReducer = Math.min(
+          ARENA_DEFAULT_OBJECT_SIZE.SNAKE / (totalBodies + 1),
+          5
+        );
 
         for (let i = 0; i < totalBodies; i++) {
           const angle = Math.random() * 180 * (Math.PI / 180);
-          const radius = maxRad - i * radiusReducer;
+          const radius = ARENA_DEFAULT_OBJECT_SIZE.SNAKE;
           if (!prevBodies) {
             const newPos = predifinedPos.clone();
             const newBody = {
               position: new Vec3(Math.floor(newPos.x), Math.floor(newPos.y), 0),
-              radius: maxRad - i * radiusReducer,
+              radius: radius,
             };
             bodies.push(newBody);
             prevBodies = newBody;
@@ -124,13 +122,13 @@ export class SnakeRenderable extends UIRenderer {
               [Math.sin(angle), Math.cos(angle)],
             ];
             newPos = new Vec3(
-              (posVec.x * rotMat[0][0] + posVec.y * rotMat[0][1]) + prevPos.x,
-              (posVec.x * rotMat[1][0] + posVec.y * rotMat[1][1]) + prevPos.y,
+              posVec.x * rotMat[0][0] + posVec.y * rotMat[0][1] + prevPos.x,
+              posVec.x * rotMat[1][0] + posVec.y * rotMat[1][1] + prevPos.y,
               0
             );
             const newBody = {
               position: new Vec3(Math.floor(newPos.x), Math.floor(newPos.y), 0),
-              radius: maxRad - i * radiusReducer,
+              radius: radius,
             };
             bodies.push(newBody);
             prevBodies = newBody;
@@ -138,7 +136,7 @@ export class SnakeRenderable extends UIRenderer {
         }
 
         this.snakesBody = bodies;
-      }, 2.);
+      }, 2);
 
       this.scheduleOnce(() => {
         this.setCustomMat();
@@ -156,8 +154,15 @@ export class SnakeRenderable extends UIRenderer {
     this.customMaterial.setProperty("yratio", trans.height / trans.width);
     this.customMaterial.setProperty(
       "reverseRes",
-      new Vec2(1.0 / trans.width, 1.0 / trans.height),
+      new Vec2(1.0 / trans.width, 1.0 / trans.height)
     );
+
+    if (this.bodyTexture?.isValid) {
+      this.customMaterial.setProperty(
+        "mainTexture",
+        this.bodyTexture.getGFXTexture()
+      );
+    }
 
     this.markForUpdateRenderData();
   }

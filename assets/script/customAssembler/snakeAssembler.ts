@@ -1,16 +1,10 @@
 import {
-  _decorator,
-  Component,
-  gfx,
-  IAssembler,
-  MeshRenderData,
-  Node,
-  UITransform,
-  Vec2,
-  Vec3,
-} from "cc";
-import { SnakeRenderable } from "../customRenderable2D/snakeRenderable";
-import { ARENA_DEFAULT_OBJECT_SIZE } from "../enum/arenaConfig";
+    _decorator, Component, gfx, IAssembler, MeshRenderData, Node, UITransform, Vec2, Vec3
+} from 'cc';
+
+import { SnakeRenderable } from '../customRenderable2D/snakeRenderable';
+import { ARENA_DEFAULT_OBJECT_SIZE } from '../enum/arenaConfig';
+
 const { ccclass, property } = _decorator;
 
 export const vfmtPosCoord = [

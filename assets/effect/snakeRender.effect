@@ -18,6 +18,7 @@ CCEffect %{
       properties: &props
         yratio: { value: 0.0 }
         reverseRes: { value: [0.0, 0.0], editor: { type: vec2 } }
+        mainTexture: { value: white }
 }%
 
 CCProgram sprite-vs %{
@@ -78,6 +79,8 @@ CCProgram sprite-fs %{
   in vec2 v_prev_pos_norm;
   in float v_next_radius;
   in float v_prev_radius;
+
+  uniform sampler2D mainTexture;
 
   float when_neq(float x, float y) {
     return abs(sign(x - y));
@@ -141,7 +144,8 @@ CCProgram sprite-fs %{
     float textureDistX = 1. - (boundary - minDist);
     float textureDistY = when_lt(dNext, dPrev) * (1.0 - hClampNext) + when_ge(dNext, dPrev) * hClampPrev;
 
-    o = vec4(vec3(textureDistX, textureDistY, 0.), (1.0 - step(boundary, minDist)));
+    o *= texture(mainTexture, vec2(textureDistX, textureDistY));
+    o.a *= (1.0 - step(boundary, minDist));
     return o;
   }
 }%
