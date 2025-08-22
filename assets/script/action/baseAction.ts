@@ -1,12 +1,14 @@
-import { _decorator, Component, misc, Vec2 } from "cc";
-import { AStar, AStarSearchData, getDistance } from "../util/aStar";
-import { SnakeActionData, SnakeConfig } from "../interface/player";
-import { FoodConfig, FoodState } from "../interface/food";
-import { Coordinate } from "../interface/map";
-import { BOT_CONFIG } from "../enum/botConfig";
-import { BOT_ACTION } from "../enum/botAction";
-import { Movement } from "../interface/gameplay";
-import { PlannerFactor } from "../interface/ai";
+import { _decorator, Component, misc, Vec2 } from 'cc';
+
+import { BOT_ACTION } from '../enum/botAction';
+import { BOT_CONFIG } from '../enum/botConfig';
+import { PlannerFactor } from '../interface/ai';
+import { FoodConfig, FoodState } from '../interface/food';
+import { Coordinate } from '../interface/map';
+import { SnakeActionData, SnakeConfig } from '../interface/player';
+import { getOrientationBetweenVector } from '../util/algorithm';
+import { AStar, AStarSearchData, getDistance } from '../util/aStar';
+
 const { ccclass, property } = _decorator;
 
 @ccclass("BaseAction")
@@ -58,7 +60,7 @@ export class BaseAction extends Component {
     const headCood = player.state.body[0].position;
     const dirTowardTarget = Math.atan2(
       headCood.y - target.y,
-      headCood.x - target.x,
+      headCood.x - target.x
     );
     const targetVec = {
       x: -Math.cos(dirTowardTarget),
@@ -72,7 +74,7 @@ export class BaseAction extends Component {
     const foodPos = targetFood.state.position;
     const dirTowardFood = Math.atan2(
       headCood.y - foodPos.y,
-      headCood.x - foodPos.x,
+      headCood.x - foodPos.x
     );
     const targetVec = {
       x: -Math.cos(dirTowardFood),
@@ -83,7 +85,7 @@ export class BaseAction extends Component {
 
   public processBotMovementByFatalObs(
     _: SnakeConfig,
-    detectedObstacle: Array<number>,
+    detectedObstacle: Array<number>
   ) {
     if (detectedObstacle.length > 0) {
       let turnAngle: number;
@@ -95,7 +97,7 @@ export class BaseAction extends Component {
         let highestAngleDifference = 360 - Math.abs(angleTwo - angleOne);
         for (let i = 1; i < detectedObstacle.length; i++) {
           const angleDiff = Math.abs(
-            detectedObstacle[i] - detectedObstacle[i - 1],
+            detectedObstacle[i] - detectedObstacle[i - 1]
           );
           if (angleDiff > highestAngleDifference) {
             angleOne = detectedObstacle[i - 1];
@@ -117,9 +119,10 @@ export class BaseAction extends Component {
   }
 
   protected turnRadiusModification(
-    newMovement: Movement,
+    player: SnakeConfig,
+    newMovement: Vec2,
     turnRadius: number,
-    coorDir?: Coordinate,
+    coorDir?: Coordinate
   ) {
     if (!this.currData) return;
 
@@ -127,15 +130,13 @@ export class BaseAction extends Component {
     if (!manager) return;
     const { playerManager } = manager;
 
-    coorDir = coorDir
-      ? coorDir
-      : playerManager?.getPlayerDirection(newMovement.player_id);
+    coorDir = coorDir ? coorDir : playerManager?.getPlayerDirection(player.id);
     if (!coorDir) return;
 
     //TURN RADIUS config range 0 - 5, transform to degrees = 30 - 180
     const turnRadians = misc.degreesToRadians(turnRadius * 30 + 30);
     const currDir = new Vec2(coorDir.x, coorDir.y);
-    const newDir = new Vec2(newMovement.vector.x, newMovement.vector.y);
+    const newDir = new Vec2(newMovement.x, newMovement.y);
     const orientation = getOrientationBetweenVector(currDir, newDir);
     const angle = Vec2.angle(currDir, newDir);
     if (Math.abs(angle) < turnRadians) return newDir;
@@ -154,16 +155,16 @@ export class BaseAction extends Component {
 
     if (!playerManager?.isValid) return;
 
-    let newDir = player.movementDirection.vector;
+    let newDir = player.state.movementDir;
     let currDir = playerManager.getPlayerDirection(player.id);
 
     newDir = new Vec2(
       Math.ceil(botNewDir.x * 100),
-      Math.ceil(botNewDir.y * 100),
+      Math.ceil(botNewDir.y * 100)
     );
 
     if (newDir) {
-      this.player.movementDirection.vector = new Vec2(newDir.x, newDir.y);
+      player.state.movementDir = new Vec2(newDir.x, newDir.y);
     }
 
     const targetDir = {
@@ -180,19 +181,15 @@ export class BaseAction extends Component {
       limit++
     ) {
       if (!playerManager) return;
-      newDir = this.turnRadiusModification(
-        {
-          player_id: player.id,
-          vector: new Vec2(targetDir.x, targetDir.y),
-        } as Movement,
-        BOT_CONFIG.TURN_RADIUS,
-        currDir,
-      );
+      newDir =
+        this.turnRadiusModification(
+          player,
+          new Vec2(targetDir.x, targetDir.y),
+          BOT_CONFIG.TURN_RADIUS,
+          currDir
+        ) ?? new Vec2(0, 0);
       if (!newDir) return;
-      currDir = {
-        x: newDir.x,
-        y: newDir.y,
-      };
+      currDir = new Vec2(newDir.x, newDir.y);
       dirArray.push(newDir);
     }
     if (dirArray.length <= 0) return;
@@ -201,10 +198,7 @@ export class BaseAction extends Component {
       const schedule = idx * 0.064;
       this.scheduleOnce(() => {
         playerManager.handleMovement(player.id, {
-          direction: {
-            x: item.x,
-            y: item.y,
-          },
+          direction: new Vec2(item.x, item.y),
         });
         if (idx >= dirArray.length - 1) {
         }
@@ -212,7 +206,7 @@ export class BaseAction extends Component {
     });
   }
 
-  protected getFoodById(id: number) {
+  protected getFoodById(id: string) {
     if (!this.currData) return undefined;
     const { manager } = this.currData;
     if (!manager) return undefined;
@@ -225,7 +219,7 @@ export class BaseAction extends Component {
   protected getPath(
     curr: Coordinate,
     target: Coordinate,
-    predefinedPath: Coordinate[] = [],
+    predefinedPath: Coordinate[] = []
   ) {
     if (!this.aStar || !this.currData?.manager?.arenaManager?.mapData)
       return null;
@@ -245,7 +239,7 @@ export class BaseAction extends Component {
       target,
       this.prevPathfindingData,
       this.player?.id || "",
-      predefinedPath,
+      predefinedPath
     );
 
     this.path = path.result;
@@ -263,7 +257,7 @@ export class BaseAction extends Component {
 
   protected isInPlayerAggresiveCone(
     targetPlayer: SnakeConfig,
-    currPlayer: SnakeConfig,
+    currPlayer: SnakeConfig
   ) {
     const mainPlayerCoord = targetPlayer.state.body[0].position;
     const currPlayerCoord = currPlayer.state.body[0].position;
@@ -273,15 +267,15 @@ export class BaseAction extends Component {
       y: currPlayerCoord.y - mainPlayerCoord.y,
     };
     const mainPlayerVec = {
-      x: targetPlayer.state.velocity?.x ?? 0,
-      y: targetPlayer.state.velocity?.y ?? 0,
+      x: targetPlayer.state.movementDir?.x ?? 0,
+      y: targetPlayer.state.movementDir?.y ?? 0,
     };
 
     const angle =
       (Math.acos(
         (currPlayerVec.x * mainPlayerVec.x +
           currPlayerVec.y * mainPlayerVec.y) /
-          (this.mag(mainPlayerVec) * this.mag(currPlayerVec)),
+          (this.mag(mainPlayerVec) * this.mag(currPlayerVec))
       ) *
         180) /
       Math.PI;
@@ -309,7 +303,7 @@ export class BaseAction extends Component {
       return 0;
     }
     return Math.sqrt(
-      coord[0] * coord[0] + coord[1] * coord[1] + coord[2] * coord[2],
+      coord[0] * coord[0] + coord[1] * coord[1] + coord[2] * coord[2]
     );
   }
 

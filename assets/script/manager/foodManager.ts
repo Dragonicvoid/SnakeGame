@@ -1,9 +1,11 @@
-import { _decorator, CCInteger, Component, Node, Vec2 } from "cc";
-import { FoodConfig } from "../interface/food";
-import { FoodSpawner } from "../spawner/foodSpawner";
-import { ARENA_DEFAULT_VALUE } from "../enum/arenaConfig";
-import { ObstacleManager } from "./obstacleManager";
-import { convertPosToCoord } from "../util/arenaConvert";
+import { _decorator, CCInteger, Component, Node, Vec2 } from 'cc';
+
+import { ARENA_DEFAULT_VALUE } from '../enum/arenaConfig';
+import { FoodConfig } from '../interface/food';
+import { FoodSpawner } from '../spawner/foodSpawner';
+import { convertPosToCoord } from '../util/arenaConvert';
+import { ObstacleManager } from './obstacleManager';
+
 const { ccclass, property } = _decorator;
 
 @ccclass("FoodManager")
@@ -24,7 +26,7 @@ export class FoodManager extends Component {
 
   public foodList: FoodConfig[] = [];
 
-  protected onLoad(): void {
+  public startSpawningFood() {
     this.schedule(() => {
       this.spawnRandomFood();
     }, this.foodSpawnInterval);
@@ -37,7 +39,7 @@ export class FoodManager extends Component {
 
     const pos = new Vec2(
       Math.random() * ARENA_DEFAULT_VALUE.WIDTH,
-      Math.random() * ARENA_DEFAULT_VALUE.HEIGHT,
+      Math.random() * ARENA_DEFAULT_VALUE.HEIGHT
     );
     const coord = convertPosToCoord(pos.x, pos.y);
     const isSafe = this.obsManager?.isPosSafeForSpawn(coord);
@@ -48,5 +50,9 @@ export class FoodManager extends Component {
     }
 
     this.foodSpawner.spawn(pos);
+  }
+
+  public getFoodById(id: string) {
+    return this.foodList.find((food) => food.id === id);
   }
 }

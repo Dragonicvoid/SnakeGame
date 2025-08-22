@@ -1,14 +1,18 @@
-import { _decorator, Component, Node } from "cc";
-import { SnakeConfig } from "../interface/player";
-import { ArenaManager } from "./ArenaManager";
-import { PlayerManager } from "./playerManager";
-import { FoodManager } from "./foodManager";
-import { BotPlanner } from "../util/botPlanner";
-import { FoodConfig } from "../interface/food";
-import { BOT_CONFIG } from "../enum/botConfig";
-import { PlannerFactor } from "../interface/ai";
-import { BaseAction } from "../action/baseAction";
-import { GridManager } from "./gridManager";
+import { _decorator, Component, Node, Vec2, Vec3 } from 'cc';
+
+import { BaseAction } from '../action/baseAction';
+import { ARENA_DEFAULT_OBJECT_SIZE } from '../enum/arenaConfig';
+import { BOT_CONFIG } from '../enum/botConfig';
+import { PlannerFactor } from '../interface/ai';
+import { FoodConfig } from '../interface/food';
+import { SnakeBody, SnakeConfig } from '../interface/player';
+import { BotPlanner } from '../util/botPlanner';
+import { ArenaManager } from './ArenaManager';
+import { FoodManager } from './foodManager';
+import { GridManager } from './gridManager';
+import { PlayerManager } from './playerManager';
+import { UIManager } from './uiManager';
+
 const { ccclass, property } = _decorator;
 
 @ccclass("GameManager")
@@ -25,15 +29,45 @@ export class GameManager extends Component {
   @property(FoodManager)
   private foodManager: FoodManager | null = null;
 
+  @property(UIManager)
+  private uiManager: UIManager | null = null;
+
   @property(BotPlanner)
   private planner: BotPlanner | null = null;
 
-  onLoad() {}
+  private botInterval: number = 0;
 
-  private handleBotLogic(player: SnakeConfig, skipTurnRadius = false) {
+  public startGame() {
+    this.uiManager?.showStartUI(false);
+    const centerPos = this.arenaManager?.centerPos ?? new Vec2(0, 0);
+
+    const playerPos = this.arenaManager?.spawnPos.pop() ?? new Vec2(0, 0);
+    const playerDir = new Vec2(1, 0);
+    if (playerPos > centerPos) {
+      playerDir.set(-1, 0);
+    }
+    this.playerManager?.createPlayer(playerPos, playerDir);
+
+    const enemyPos = this.arenaManager?.spawnPos.pop() ?? new Vec2(0, 0);
+    const enemyDir = new Vec2(1, 0);
+    if (enemyPos > centerPos) {
+      enemyDir.set(-1, 0);
+    }
+    this.playerManager?.createPlayer(enemyPos, enemyDir, true);
+
+    this.foodManager?.startSpawningFood();
+
+    // this.schedule(() => {
+    //   this.playerManager?.playerList.forEach((snake) => {
+    //     this.handleBotLogic(snake);
+    //   });
+    // });
+  }
+
+  private handleBotLogic(snake: SnakeConfig, skipTurnRadius = false) {
     if (!skipTurnRadius) return;
 
-    if (!player.isBot) return;
+    if (!snake.isBot) return;
 
     if (
       !this.playerManager?.isValid ||
@@ -50,26 +84,26 @@ export class GameManager extends Component {
     // this.processBotBoosterUsage(player);
 
     //if bot in the middle of turning sequene, disable the turn logic
-    if (player.state.inDirectionChange === true && !skipTurnRadius) return;
+    if (snake.state.inDirectionChange === true && !skipTurnRadius) return;
     //detect player and food
     detectedPlayer = this.playerManager.findNearestPlayerTowardPoint(
-      player,
-      BOT_CONFIG.TRIGGER_AREA_DST,
+      snake,
+      BOT_CONFIG.TRIGGER_AREA_DST
     );
 
     detectedWall =
       this.arenaManager.findNearestObstacleTowardPoint(
-        player,
-        BOT_CONFIG.TRIGGER_AREA_DST,
+        snake,
+        BOT_CONFIG.TRIGGER_AREA_DST
       ) ?? [];
 
     // need to updated to adjust botData
-    let targetFood = player.state.targetFood;
+    let targetFood = snake.state.targetFood;
     if (detectedPlayer.length < 1 && !targetFood) {
       detectedFood =
         this.arenaManager.getNearestDetectedFood(
-          player,
-          BOT_CONFIG.TRIGGER_AREA_DST,
+          snake,
+          BOT_CONFIG.TRIGGER_AREA_DST
         ) ?? undefined;
     }
 
@@ -82,7 +116,7 @@ export class GameManager extends Component {
 
     if (targetFood) {
       const targetExist = this.foodManager.foodList.find(
-        (item) => item.id === targetFood.food.id,
+        (item) => item.id === targetFood.food.id
       );
       const targetIsEaten = targetFood.food.state.eaten;
       const isExpired = Date.now() - targetFood.timeTargeted > 3000;
@@ -90,11 +124,11 @@ export class GameManager extends Component {
       //   targetFood: undefined,
       // };
       if (!targetExist || targetIsEaten || isExpired) {
-        player.state.targetFood = undefined;
+        snake.state.targetFood = undefined;
       }
     }
 
-    const currState = player.state.body[0];
+    const currState = snake.state.body[0];
 
     const gridWithMostFood = this.arenaManager?.getGridWithMostFood();
 
@@ -106,28 +140,28 @@ export class GameManager extends Component {
       gridWithMostFood: gridWithMostFood,
       listOfAvailableGrid: this.gridManager?.gridList ?? [],
       playerList: this.playerManager.playerList,
-      player: player,
+      player: snake,
     };
     const possibleActions: BaseAction[] = [];
-    player.possibleActions.forEach((action) => {
+    snake.possibleActions?.forEach((action) => {
       possibleActions.push(action);
     });
     const currAction = this.planner.plan(possibleActions, factor);
 
-    const differentAction = currAction !== player.action;
-    if (currAction && player.action?.allowToChange()) {
+    const differentAction = currAction !== snake.action;
+    if (currAction && snake.action?.allowToChange()) {
       if (differentAction) {
-        player.action?.onChange();
+        snake.action?.onChange();
       }
 
-      player.action = currAction;
+      snake.action = currAction;
 
       if (differentAction) {
         currAction.init();
       }
     }
 
-    player.action?.run(player, {
+    snake.action?.run(snake, {
       manager: {
         arenaManager: this.arenaManager,
         foodManager: this.foodManager,
@@ -137,17 +171,5 @@ export class GameManager extends Component {
       detectedPlayer: detectedPlayer,
       detectedWall: detectedWall,
     });
-
-    // if (shouldDebug()) {
-    //   const possibleActions = player.serverPlayerData.possibleActions;
-    //   player.playerState.debugData = {
-    //     actionName: player.serverPlayerData.action?.mapKey,
-    //     enemyID: player.playerState.id,
-    //     enemyPath: player.serverPlayerData.action?.path,
-    //     pathfindingState: player.serverPlayerData.action?.prevPathfindingData,
-    //     opponentSetting: player.serverPlayerData.botData?.opponentSetting,
-    //     possibleActions: possibleActions,
-    //   };
-    // }
   }
 }

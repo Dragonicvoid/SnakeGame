@@ -35,6 +35,10 @@
     {
       "name": "SNAKE",
       "value": 2
+    },
+    {
+      "name": "FOREGROUND",
+      "value": 4
     }
   ]
 }

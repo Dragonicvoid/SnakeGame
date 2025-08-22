@@ -1,6 +1,7 @@
-import { Vec2, Vec3 } from "cc";
-import { FoodConfig } from "./food";
-import { SnakeConfig } from "./player";
+import { Vec2 } from 'cc';
+
+import { FoodConfig } from './food';
+import { SnakeConfig } from './player';
 
 export interface PlannerFactor {
   player: SnakeConfig;
@@ -11,7 +12,7 @@ export interface PlannerFactor {
   detectedWall: number[];
   detectedFood?: FoodConfig;
 
-  currCoord: Vec3;
+  currCoord: Vec2;
   // TODO update with Grid interface
   gridWithMostFood: any;
   listOfAvailableGrid: any;

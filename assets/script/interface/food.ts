@@ -1,4 +1,4 @@
-import { Component, Vec3 } from "cc";
+import { Component, Vec2 } from 'cc';
 
 export interface FoodConfig {
   id: string;
@@ -8,6 +8,6 @@ export interface FoodConfig {
 }
 
 export interface FoodState {
-  position: Vec3;
+  position: Vec2;
   eaten: boolean;
 }

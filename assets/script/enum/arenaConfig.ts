@@ -11,6 +11,7 @@ export enum ARENA_DEFAULT_OBJECT_SIZE {
   SPIKE = 20,
   SNAKE = 20,
   TILE = 20,
+  FOOD_GRABBER = 30,
 }
 
 export enum ARENA_OBJECT_TYPE {
@@ -19,4 +20,5 @@ export enum ARENA_OBJECT_TYPE {
   WALL = 1 << 2,
   SPIKE = 1 << 3,
   SNAKE = 1 << 4,
+  SPAWN_POINT = 1 << 5,
 }

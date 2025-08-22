@@ -1,18 +1,18 @@
-import { _decorator, Component, Node, Vec2 } from "cc";
-import { SnakeConfig } from "../interface/player";
+import { _decorator, Component, Node, Vec2 } from 'cc';
+
+import { configMaps } from '../defaultValue/map';
 import {
-  ARENA_DEFAULT_OBJECT_SIZE,
-  ARENA_DEFAULT_VALUE,
-  ARENA_OBJECT_TYPE,
-} from "../enum/arenaConfig";
-import { GridConfig, SpikeConfig } from "../interface/gridConfig";
-import { FoodConfig } from "../interface/food";
-import { GridManager } from "./gridManager";
-import { Coordinate } from "../interface/map";
-import { convertPosToArenaPos, getGridIdxByCoord } from "../util/arenaConvert";
-import { ObstacleManager } from "./obstacleManager";
-import { PersistentDataManager } from "./persistentDataManager";
-import { configMaps } from "../defaultValue/map";
+    ARENA_DEFAULT_OBJECT_SIZE, ARENA_DEFAULT_VALUE, ARENA_OBJECT_TYPE
+} from '../enum/arenaConfig';
+import { FoodConfig } from '../interface/food';
+import { GridConfig, SpikeConfig } from '../interface/gridConfig';
+import { Coordinate, TileMapData } from '../interface/map';
+import { SnakeConfig } from '../interface/player';
+import { convertCoorToArenaPos, getGridIdxByCoord } from '../util/arenaConvert';
+import { GridManager } from './gridManager';
+import { ObstacleManager } from './obstacleManager';
+import { PersistentDataManager } from './persistentDataManager';
+
 const { ccclass, property } = _decorator;
 
 @ccclass("ArenaManager")
@@ -23,6 +23,12 @@ export class ArenaManager extends Component {
   @property(ObstacleManager)
   private obsManager: ObstacleManager | null = null;
 
+  public mapData: TileMapData[][] = [[]];
+
+  public spawnPos: Vec2[] = [];
+
+  public centerPos: Vec2 = new Vec2();
+
   protected start(): void {
     this.initializedMap();
   }
@@ -30,6 +36,11 @@ export class ArenaManager extends Component {
   private initializedMap() {
     const mapIdx = PersistentDataManager.instance.selectedMap;
     const map = configMaps[mapIdx];
+    this.spawnPos = [];
+    this.centerPos = convertCoorToArenaPos(
+      Math.floor(map.row / 2),
+      Math.floor(map.col / 2)
+    );
 
     for (let y = map.col - 1; y >= 0; y--) {
       for (let x = 0; x < map.row; x++) {
@@ -45,9 +56,18 @@ export class ArenaManager extends Component {
         this.obsManager?.createSpike(coor);
         break;
       case ARENA_OBJECT_TYPE.NONE:
+        break;
       case ARENA_OBJECT_TYPE.FOOD:
+        break;
       case ARENA_OBJECT_TYPE.WALL:
+        break;
       case ARENA_OBJECT_TYPE.SNAKE:
+        break;
+      case ARENA_OBJECT_TYPE.SPAWN_POINT:
+        const pos = convertCoorToArenaPos(coor.x, coor.y);
+        console.log("spawns: ", pos.x, pos.y);
+        this.spawnPos.push(pos);
+        break;
       default:
         break;
     }
@@ -83,13 +103,13 @@ export class ArenaManager extends Component {
         spike.position.x,
         spike.position.y,
         radius,
-        ARENA_DEFAULT_OBJECT_SIZE.TILE,
+        ARENA_DEFAULT_OBJECT_SIZE.TILE
       );
 
       if (detectObstacle) {
         const obstacleAngle = Math.atan2(
           botHeadPos.position.y - spike.position.y,
-          botHeadPos.position.x - spike.position.x,
+          botHeadPos.position.x - spike.position.x
         );
         if (duplicateAngleDetection.indexOf(obstacleAngle) === -1) {
           duplicateAngleDetection.push(obstacleAngle);
@@ -108,7 +128,7 @@ export class ArenaManager extends Component {
     x2: number,
     y2: number,
     circleRadius: number,
-    boxWidth: number,
+    boxWidth: number
   ) {
     const deltaX = Math.abs(x1 - x2);
     const deltaY = Math.abs(y1 - y2);
@@ -133,19 +153,9 @@ export class ArenaManager extends Component {
     return hitCorner <= Math.pow(circleRadius, 2);
   }
 
-  public getGridWithMostFood(): GridConfig | undefined {
-    let result: undefined | GridConfig = undefined;
-    this.gridManager?.gridList.forEach((grid) => {
-      if (!result || grid.foods.length > result.foods.length) {
-        result = grid;
-      }
-    });
-    return result;
-  }
-
   public getNearestDetectedFood(
     player: SnakeConfig,
-    radius: number,
+    radius: number
   ): FoodConfig | null {
     let result: FoodConfig | null = null;
 
@@ -193,5 +203,48 @@ export class ArenaManager extends Component {
     }
 
     return gridToCheck;
+  }
+  public getGridWithMostFood(): GridConfig | undefined {
+    let result: undefined | GridConfig = undefined;
+    this.gridManager?.gridList.forEach((grid) => {
+      if (!result || grid.foods.length > result.foods.length) {
+        result = grid;
+      }
+    });
+    return result;
+  }
+
+  public setMapBody(coord: Coordinate, playerId: string) {
+    if (!this.mapData) return;
+
+    const { TILE } = ARENA_DEFAULT_OBJECT_SIZE;
+    const idxX = Math.floor(coord.x / TILE);
+    const idxY = Math.floor(coord.y / TILE);
+
+    if (!this.mapData[idxX] || !this.mapData[idxX][idxY]) return;
+
+    this.mapData[idxX][idxY].playerIDList.push(playerId);
+  }
+
+  public removePlayerMapBody(player: SnakeConfig) {
+    player.state.body.forEach((part) => {
+      this.removeMapBody(part.position, player.id);
+    });
+  }
+
+  public removeMapBody(coord: Coordinate, playerId: string) {
+    if (!this.mapData) return;
+
+    const { TILE } = ARENA_DEFAULT_OBJECT_SIZE;
+    const idxX = Math.floor(coord.x / TILE);
+    const idxY = Math.floor(coord.y / TILE);
+
+    if (!this.mapData[idxX] || !this.mapData[idxX][idxY]) return;
+
+    this.mapData[idxX][idxY].playerIDList = this.mapData[idxX][
+      idxY
+    ].playerIDList.filter((id) => {
+      return id !== playerId;
+    });
   }
 }

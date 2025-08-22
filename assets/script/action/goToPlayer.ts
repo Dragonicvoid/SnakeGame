@@ -1,13 +1,15 @@
-import { _decorator, math, Vec2 } from "cc";
-import { BaseAction } from "./baseAction";
-import { getDistance } from "../util/aStar";
-import { BOT_ACTION } from "../enum/botAction";
-import { SnakeActionData, SnakeConfig } from "../interface/player";
-import { Movement } from "../interface/gameplay";
-import { ARENA_DEFAULT_OBJECT_SIZE } from "../enum/arenaConfig";
-import { PlannerFactor } from "../interface/ai";
-import { ACTION_SCORE } from "../enum/actionScore";
-import { BOT_CONFIG } from "../enum/botConfig";
+import { _decorator, math, Vec2 } from 'cc';
+
+import { ACTION_SCORE } from '../enum/actionScore';
+import { ARENA_DEFAULT_OBJECT_SIZE } from '../enum/arenaConfig';
+import { BOT_ACTION } from '../enum/botAction';
+import { BOT_CONFIG } from '../enum/botConfig';
+import { PlannerFactor } from '../interface/ai';
+import { Movement } from '../interface/gameplay';
+import { SnakeActionData, SnakeConfig } from '../interface/player';
+import { getDistance } from '../util/aStar';
+import { BaseAction } from './baseAction';
+
 const { ccclass, property } = _decorator;
 
 @ccclass("GoToPlayerAction")
@@ -60,7 +62,7 @@ export class GoToPlayerAction extends BaseAction {
     if (!mainPlayer) return;
 
     const { TILE } = ARENA_DEFAULT_OBJECT_SIZE;
-    const frontRay = mainPlayer.state.velocity;
+    const frontRay = mainPlayer.state.movementDir;
     const currHeadPos = player.state.body[0].position;
     const mainPlayerHead = mainPlayer.state.body[0].position;
 

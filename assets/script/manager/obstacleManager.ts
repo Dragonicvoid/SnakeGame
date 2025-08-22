@@ -1,26 +1,15 @@
+import { _decorator, CCBoolean, Component, instantiate, Node, UITransform, Vec2 } from 'cc';
+
 import {
-  _decorator,
-  Component,
-  Node,
-  UITransform,
-  Vec2,
-  CCBoolean,
-  instantiate,
-} from "cc";
-import { Coordinate, TileMapData } from "../interface/map";
+    ARENA_DEFAULT_OBJECT_SIZE, ARENA_DEFAULT_VALUE, ARENA_OBJECT_TYPE
+} from '../enum/arenaConfig';
+import { Coordinate, TileMapData } from '../interface/map';
+import { ObstacleSpriteRef } from '../interface/other';
+import { GameplayCamera } from '../object/gameplayCamera';
 import {
-  ARENA_DEFAULT_OBJECT_SIZE,
-  ARENA_DEFAULT_VALUE,
-  ARENA_OBJECT_TYPE,
-} from "../enum/arenaConfig";
-import {
-  convertArenaPosToCoord,
-  convertCoorToArenaPos,
-  convertPosToArenaPos,
-  getGridIdxByCoord,
-} from "../util/arenaConvert";
-import { ObstacleSpriteRef } from "../interface/other";
-import { GameplayCamera } from "../object/gameplayCamera";
+    convertArenaPosToCoord, convertCoorToArenaPos, convertPosToArenaPos, getGridIdxByCoord
+} from '../util/arenaConvert';
+
 const { ccclass, property } = _decorator;
 
 @ccclass("ObstacleManager")

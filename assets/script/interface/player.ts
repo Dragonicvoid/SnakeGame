@@ -1,27 +1,36 @@
-import { Component, Vec2, Vec3 } from "cc";
-import { Movement } from "./gameplay";
-import { BOT_ACTION } from "../enum/botAction";
-import { BaseAction } from "../action/baseAction";
-import { FoodConfig } from "./food";
-import { PlayerManager } from "../manager/playerManager";
-import { ArenaManager } from "../manager/ArenaManager";
-import { FoodManager } from "../manager/foodManager";
-import { Coordinate } from "./map";
-import { AStarSearchData } from "../util/aStar";
+import { Component, Node, Vec2, Vec3 } from 'cc';
+
+import { BaseAction } from '../action/baseAction';
+import { SnakeRenderable } from '../customRenderable2D/snakeRenderable';
+import { BOT_ACTION } from '../enum/botAction';
+import { ArenaManager } from '../manager/ArenaManager';
+import { FoodManager } from '../manager/foodManager';
+import { PlayerManager } from '../manager/playerManager';
+import { AStarSearchData } from '../util/aStar';
+import { FoodConfig } from './food';
+import { Coordinate } from './map';
+import { XY } from './other';
 
 export interface SnakeConfig {
   id: string;
   state: SnakeState;
-  movementDirection: Movement;
   isBot: boolean;
   isAlive: boolean;
-  possibleActions: Map<BOT_ACTION, BaseAction>;
-  action: BaseAction | undefined;
+
+  render?: SnakeRenderable | null;
+  possibleActions?: Map<BOT_ACTION, BaseAction>;
+  action?: BaseAction;
 }
 
 export interface SnakeState {
+  foodGrabber: FoodGrabber;
   body: SnakeBody[];
-  velocity: Vec2;
+  // this is target Vec2 direction doesn't mean its
+  // actual current direction in the game
+  movementDir: Vec2;
+  inputDirection: Vec2;
+  speed: number;
+  coordName: string;
   inDirectionChange: boolean;
   debugData?: SnakeDebugData;
   targetFood?: {
@@ -31,8 +40,18 @@ export interface SnakeState {
 }
 
 export interface SnakeBody {
-  position: Vec3;
-  radius: number
+  position: Vec2;
+  radius: number;
+  movementQueue: XY[];
+  // actual current direction in the game
+  velocity: Vec2;
+  obj?: Node;
+}
+
+export interface FoodGrabber {
+  position: Vec2;
+  radius: number;
+  obj?: Node;
 }
 
 export interface SnakeActionData<T = any> {
