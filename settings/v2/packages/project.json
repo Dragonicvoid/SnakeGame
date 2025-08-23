@@ -39,6 +39,18 @@
     {
       "name": "FOREGROUND",
       "value": 4
+    },
+    {
+      "name": "SNAKE_ENEMY",
+      "value": 8
     }
-  ]
+  ],
+  "general": {
+    "designResolution": {
+      "width": 720,
+      "height": 720,
+      "fitHeight": false,
+      "fitWidth": true
+    }
+  }
 }

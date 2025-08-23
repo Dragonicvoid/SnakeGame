@@ -1,6 +1,6 @@
 import {
-    _decorator, Camera, IAssembler, Material, profiler, RenderTexture, Sprite, SpriteFrame, sys,
-    Texture2D, UIRenderer, UITransform, Vec2, Vec3
+    _decorator, Camera, CCInteger, IAssembler, Material, profiler, RenderTexture, Sprite,
+    SpriteFrame, sys, Texture2D, UIRenderer, UITransform, Vec2, Vec3
 } from 'cc';
 import { EDITOR } from 'cc/env';
 
@@ -24,6 +24,9 @@ export class SnakeRenderable extends UIRenderer {
   @property(Texture2D)
   public bodyTexture: Texture2D | null = null;
 
+  @property(CCInteger)
+  public pixelated: number = 0;
+
   public snakesBody: SnakeBody[] = [];
 
   private count = 0;
@@ -41,8 +44,8 @@ export class SnakeRenderable extends UIRenderer {
 
       let renderTex = new RenderTexture();
       renderTex.initialize({
-        width: trans.width,
-        height: trans.height,
+        width: trans.width * 2 * (10 / (this.pixelated + 10)),
+        height: trans.height * 2 * (10 / (this.pixelated + 10)),
       });
 
       this.cam.targetTexture = renderTex;

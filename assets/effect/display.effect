@@ -17,6 +17,10 @@ CCEffect %{
         cullMode: none
       properties:
         alphaThreshold: { value: 0.5 }
+        highlightCol: { value: [0.0, 0.0, 0.0, 1.0], editor: { type: color } }
+        width: { value: 700 }
+        height: { value: 700 }
+        strength: { value: 0.9 }
 }%
 
 CCProgram display-vs %{
@@ -61,6 +65,13 @@ CCProgram display-fs %{
 
   in vec4 color;
 
+  uniform Const {
+    vec4 highlightCol;
+    float height;
+    float width;
+    float strength;
+  };
+
   #if USE_TEXTURE
     in vec2 uv0;
     #pragma builtin(local)
@@ -71,14 +82,31 @@ CCProgram display-fs %{
     vec4 o = vec4(1, 1, 1, 1);
 
     #if USE_TEXTURE
-      o *= CCSampleWithAlphaSeparated(cc_spriteTexture, uv0);
+      float widthStep = 1. / width;
+      float heightStep = 1. / height;
+      const float radius = 2.0;
+      const float blurPixels = (radius * 2.0 + 1.0) * (radius * 2.0 + 1.0);
+
+      float sumAlpha = 0.;
+      for(float fy = -radius; fy <= radius; ++fy)
+      {
+        for(float fx = -radius; fx <= radius; ++fx)
+        {
+          vec2 coord = vec2(fx * widthStep, fy * heightStep);
+          sumAlpha += CCSampleWithAlphaSeparated(cc_spriteTexture, uv0 + coord).a;
+        }
+      }
+
+      float blur = (sumAlpha / blurPixels) * (1.0 + strength);
+      vec4 tex = CCSampleWithAlphaSeparated(cc_spriteTexture, uv0);
+      o = mix(vec4(highlightCol.rgb, clamp(blur, 0., 1.0)), tex, tex.a);
+
       #if IS_GRAY
         float gray  = 0.2126 * o.r + 0.7152 * o.g + 0.0722 * o.b;
         o.r = o.g = o.b = gray;
       #endif
     #endif
 
-    o.a = smoothstep(0.95, 1.0, o.a);
     o *= color;
 
     ALPHA_TEST(o);
