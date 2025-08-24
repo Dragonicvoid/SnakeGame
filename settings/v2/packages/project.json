@@ -43,6 +43,10 @@
     {
       "name": "SNAKE_ENEMY",
       "value": 8
+    },
+    {
+      "name": "TEXTURE",
+      "value": 16
     }
   ],
   "general": {

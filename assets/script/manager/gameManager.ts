@@ -1,17 +1,17 @@
-import { _decorator, Component, Node, Vec2, Vec3 } from 'cc';
+import { _decorator, Component, Node, Vec2, Vec3 } from "cc";
 
-import { BaseAction } from '../action/baseAction';
-import { ARENA_DEFAULT_OBJECT_SIZE } from '../enum/arenaConfig';
-import { BOT_CONFIG } from '../enum/botConfig';
-import { PlannerFactor } from '../interface/ai';
-import { FoodConfig } from '../interface/food';
-import { SnakeBody, SnakeConfig } from '../interface/player';
-import { BotPlanner } from '../util/botPlanner';
-import { ArenaManager } from './ArenaManager';
-import { FoodManager } from './foodManager';
-import { GridManager } from './gridManager';
-import { PlayerManager } from './playerManager';
-import { UIManager } from './uiManager';
+import { BaseAction } from "../action/baseAction";
+import { ARENA_DEFAULT_OBJECT_SIZE } from "../enum/arenaConfig";
+import { BOT_CONFIG } from "../enum/botConfig";
+import { PlannerFactor } from "../interface/ai";
+import { FoodConfig } from "../interface/food";
+import { SnakeBody, SnakeConfig } from "../interface/player";
+import { BotPlanner } from "../util/botPlanner";
+import { ArenaManager } from "./ArenaManager";
+import { FoodManager } from "./foodManager";
+import { GridManager } from "./gridManager";
+import { PlayerManager } from "./playerManager";
+import { UIManager } from "./uiManager";
 
 const { ccclass, property } = _decorator;
 
@@ -88,13 +88,13 @@ export class GameManager extends Component {
     //detect player and food
     detectedPlayer = this.playerManager.findNearestPlayerTowardPoint(
       snake,
-      BOT_CONFIG.TRIGGER_AREA_DST
+      BOT_CONFIG.TRIGGER_AREA_DST,
     );
 
     detectedWall =
       this.arenaManager.findNearestObstacleTowardPoint(
         snake,
-        BOT_CONFIG.TRIGGER_AREA_DST
+        BOT_CONFIG.TRIGGER_AREA_DST,
       ) ?? [];
 
     // need to updated to adjust botData
@@ -103,7 +103,7 @@ export class GameManager extends Component {
       detectedFood =
         this.arenaManager.getNearestDetectedFood(
           snake,
-          BOT_CONFIG.TRIGGER_AREA_DST
+          BOT_CONFIG.TRIGGER_AREA_DST,
         ) ?? undefined;
     }
 
@@ -116,7 +116,7 @@ export class GameManager extends Component {
 
     if (targetFood) {
       const targetExist = this.foodManager.foodList.find(
-        (item) => item.id === targetFood.food.id
+        (item) => item.id === targetFood.food.id,
       );
       const targetIsEaten = targetFood.food.state.eaten;
       const isExpired = Date.now() - targetFood.timeTargeted > 3000;

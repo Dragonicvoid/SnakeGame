@@ -1,4 +1,13 @@
-import { _decorator, CCFloat, Component, Node, Sprite, tween, Tween, Vec3 } from 'cc';
+import {
+  _decorator,
+  CCFloat,
+  Component,
+  Node,
+  Sprite,
+  tween,
+  Tween,
+  Vec3,
+} from "cc";
 
 const { ccclass, property } = _decorator;
 
@@ -28,7 +37,6 @@ export class UpAndDown extends Component {
   protected start(): void {
     let obj = { val: this.height * this.mult * -1 };
 
-    console.log(this.sprite);
     this.animate(obj);
   }
 

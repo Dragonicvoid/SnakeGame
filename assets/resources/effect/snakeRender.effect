@@ -47,13 +47,13 @@ CCProgram sprite-vs %{
   vec4 vert () {
     vec4 pos = vec4(a_position.xy, 0., 1.);
 
-    v_next_pos_norm = (a_center - a_prev_pos.xy) / a_next_pos.z;
-    if (a_next_pos.x != 0. && a_next_pos.y != 0.) {
+    v_next_pos_norm = (a_prev_pos.xy - a_center) / a_next_pos.z;
+    if (a_next_pos.x != 0. || a_next_pos.y != 0.) {
       v_next_pos_norm = (a_next_pos.xy - a_center) / a_next_pos.z;
     }
 
     v_prev_pos_norm = (a_next_pos.xy - a_center) / a_next_pos.z;
-    if (a_prev_pos.x != 0. && a_prev_pos.y != 0.) {
+    if (a_prev_pos.x != 0. || a_prev_pos.y != 0.) {
       v_prev_pos_norm = (a_prev_pos.xy - a_center) / a_prev_pos.z;
     }
 

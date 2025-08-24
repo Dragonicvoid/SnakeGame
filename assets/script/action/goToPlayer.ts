@@ -1,14 +1,14 @@
-import { _decorator, math, Vec2 } from 'cc';
+import { _decorator, math, Vec2 } from "cc";
 
-import { ACTION_SCORE } from '../enum/actionScore';
-import { ARENA_DEFAULT_OBJECT_SIZE } from '../enum/arenaConfig';
-import { BOT_ACTION } from '../enum/botAction';
-import { BOT_CONFIG } from '../enum/botConfig';
-import { PlannerFactor } from '../interface/ai';
-import { Movement } from '../interface/gameplay';
-import { SnakeActionData, SnakeConfig } from '../interface/player';
-import { getDistance } from '../util/aStar';
-import { BaseAction } from './baseAction';
+import { ACTION_SCORE } from "../enum/actionScore";
+import { ARENA_DEFAULT_OBJECT_SIZE } from "../enum/arenaConfig";
+import { BOT_ACTION } from "../enum/botAction";
+import { BOT_CONFIG } from "../enum/botConfig";
+import { PlannerFactor } from "../interface/ai";
+import { Movement } from "../interface/gameplay";
+import { SnakeActionData, SnakeConfig } from "../interface/player";
+import { getDistance } from "../util/aStar";
+import { BaseAction } from "./baseAction";
 
 const { ccclass, property } = _decorator;
 

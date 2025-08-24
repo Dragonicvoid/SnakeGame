@@ -1,0 +1,32 @@
+{
+  "skins": [
+    {
+      "id": 1001,
+      "name": "Snake Skin",
+      "effect_name": "",
+      "sprite_frame": "image/textureSpf/snake_skin",
+      "defines": {
+        "USE_TEXTURE": true
+      }
+    },
+    {
+      "id": 1002,
+      "name": "Brick Skin",
+      "effect_name": "",
+      "sprite_frame": "image/textureSpf/test",
+      "defines": {
+        "USE_TEXTURE": true
+      }
+    },
+
+    {
+      "id": 2001,
+      "name": "Snake Skin Move",
+      "effect_name": "effect/textureFx/infiniteScroll",
+      "sprite_frame": "image/textureSpf/snake_skin",
+      "defines": {
+        "USE_TEXTURE": true
+      }
+    }
+  ]
+}

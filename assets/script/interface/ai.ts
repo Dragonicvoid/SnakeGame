@@ -1,7 +1,7 @@
-import { Vec2 } from 'cc';
+import { Vec2 } from "cc";
 
-import { FoodConfig } from './food';
-import { SnakeConfig } from './player';
+import { FoodConfig } from "./food";
+import { SnakeConfig } from "./player";
 
 export interface PlannerFactor {
   player: SnakeConfig;

@@ -1,9 +1,17 @@
 import {
-    _decorator, Component, gfx, IAssembler, MeshRenderData, Node, UITransform, Vec2, Vec3
-} from 'cc';
+  _decorator,
+  Component,
+  gfx,
+  IAssembler,
+  MeshRenderData,
+  Node,
+  UITransform,
+  Vec2,
+  Vec3,
+} from "cc";
 
-import { SnakeRenderable } from '../customRenderable2D/snakeRenderable';
-import { ARENA_DEFAULT_OBJECT_SIZE } from '../enum/arenaConfig';
+import { SnakeRenderable } from "../customRenderable2D/snakeRenderable";
+import { ARENA_DEFAULT_OBJECT_SIZE } from "../enum/arenaConfig";
 
 const { ccclass, property } = _decorator;
 
@@ -77,8 +85,8 @@ export class SnakeAssembler implements IAssembler {
       const boxSize = r;
 
       // left-bottom
-      vbuf[vertexOffset++] = x - boxSize + m12 - halfUITrans.x;
-      vbuf[vertexOffset++] = y - boxSize + m13 - halfUITrans.y;
+      vbuf[vertexOffset++] = x - boxSize + m12;
+      vbuf[vertexOffset++] = y - boxSize + m13;
       vbuf[vertexOffset++] = r;
       vbuf[vertexOffset++] = 0;
       vbuf[vertexOffset++] = 0;
@@ -92,8 +100,8 @@ export class SnakeAssembler implements IAssembler {
       vbuf[vertexOffset++] = prevR;
 
       // right-bottom
-      vbuf[vertexOffset++] = x + boxSize + m12 - halfUITrans.x;
-      vbuf[vertexOffset++] = y - boxSize + m13 - halfUITrans.y;
+      vbuf[vertexOffset++] = x + boxSize + m12;
+      vbuf[vertexOffset++] = y - boxSize + m13;
       vbuf[vertexOffset++] = r;
       vbuf[vertexOffset++] = 1;
       vbuf[vertexOffset++] = 0;
@@ -107,8 +115,8 @@ export class SnakeAssembler implements IAssembler {
       vbuf[vertexOffset++] = prevR;
 
       // left-top
-      vbuf[vertexOffset++] = x - boxSize + m12 - halfUITrans.x;
-      vbuf[vertexOffset++] = y + boxSize + m13 - halfUITrans.y;
+      vbuf[vertexOffset++] = x - boxSize + m12;
+      vbuf[vertexOffset++] = y + boxSize + m13;
       vbuf[vertexOffset++] = r;
       vbuf[vertexOffset++] = 0;
       vbuf[vertexOffset++] = 1;
@@ -122,8 +130,8 @@ export class SnakeAssembler implements IAssembler {
       vbuf[vertexOffset++] = prevR;
 
       // right-top
-      vbuf[vertexOffset++] = x + boxSize + m12 - halfUITrans.x;
-      vbuf[vertexOffset++] = y + boxSize + m13 - halfUITrans.y;
+      vbuf[vertexOffset++] = x + boxSize + m12;
+      vbuf[vertexOffset++] = y + boxSize + m13;
       vbuf[vertexOffset++] = r;
       vbuf[vertexOffset++] = 1;
       vbuf[vertexOffset++] = 1;

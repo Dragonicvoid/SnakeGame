@@ -1,4 +1,4 @@
-import { Component, Vec2 } from 'cc';
+import { Component, Vec2 } from "cc";
 
 export interface FoodConfig {
   id: string;

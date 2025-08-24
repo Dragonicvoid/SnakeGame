@@ -1,13 +1,23 @@
-import { _decorator, clamp, Component, game, instantiate, Node, Prefab, Vec2, Vec3 } from 'cc';
+import {
+  _decorator,
+  clamp,
+  Component,
+  game,
+  instantiate,
+  Node,
+  Prefab,
+  Vec2,
+  Vec3,
+} from "cc";
 
-import { SnakeRenderable } from '../customRenderable2D/snakeRenderable';
-import { ARENA_DEFAULT_OBJECT_SIZE } from '../enum/arenaConfig';
-import { SNAKE_CONFIG } from '../enum/snakeConfig';
-import { Coordinate } from '../interface/map';
-import { XY } from '../interface/other';
-import { SnakeBody, SnakeConfig, SnakeState } from '../interface/player';
-import { getStringCoordName } from '../util/aStar';
-import { ArenaManager } from './ArenaManager';
+import { SnakeRenderable } from "../customRenderable2D/snakeRenderable";
+import { ARENA_DEFAULT_OBJECT_SIZE } from "../enum/arenaConfig";
+import { SNAKE_CONFIG } from "../enum/snakeConfig";
+import { Coordinate } from "../interface/map";
+import { XY } from "../interface/other";
+import { SnakeBody, SnakeConfig, SnakeState } from "../interface/player";
+import { getStringCoordName } from "../util/aStar";
+import { ArenaManager } from "./ArenaManager";
 
 const { ccclass, property } = _decorator;
 
@@ -77,7 +87,7 @@ export class PlayerManager extends Component {
         ];
         newPos = new Vec2(
           posVec.x * rotMat[0][0] + posVec.y * rotMat[0][1] + prevPos.x,
-          posVec.x * rotMat[1][0] + posVec.y * rotMat[1][1] + prevPos.y
+          posVec.x * rotMat[1][0] + posVec.y * rotMat[1][1] + prevPos.y,
         );
         const newBody = {
           position: newPos,
@@ -130,7 +140,7 @@ export class PlayerManager extends Component {
 
   public findNearestPlayerTowardPoint(
     currentPlayer: SnakeConfig,
-    radius: number
+    radius: number,
   ) {
     const duplicateAngleDetection: Array<number> = [];
     const detectedObstacleAngles: Array<number> = [];
@@ -149,13 +159,13 @@ export class PlayerManager extends Component {
           otherPlayer.state.body[i].position.x,
           otherPlayer.state.body[i].position.y,
           radius,
-          SNAKE_CONFIG.RADIUS
+          SNAKE_CONFIG.RADIUS,
         );
 
         if (detectOtherPlayer) {
           const obstacleAngle = Math.atan2(
             botHeadPos.position.y - otherPlayer.state.body[i].position.y,
-            botHeadPos.position.x - otherPlayer.state.body[i].position.x
+            botHeadPos.position.x - otherPlayer.state.body[i].position.x,
           );
           if (duplicateAngleDetection.indexOf(obstacleAngle) === -1) {
             duplicateAngleDetection.push(obstacleAngle);
@@ -174,7 +184,7 @@ export class PlayerManager extends Component {
     x2: number,
     y2: number,
     r1: number,
-    r2: number
+    r2: number,
   ) {
     const deltaX = x2 - x1;
     const deltaY = y2 - y1;
@@ -200,7 +210,7 @@ export class PlayerManager extends Component {
       direction?: Vec2;
       speed?: number;
       initialMovement?: boolean;
-    }
+    },
   ) {
     if (option?.speed === -1) return;
     const player = this.playerList.find((x) => x.id === playerId);
@@ -283,11 +293,11 @@ export class PlayerManager extends Component {
 
               bodyState.obj?.setPosition(
                 queueState?.x ?? 0,
-                queueState?.y ?? 0
+                queueState?.y ?? 0,
               );
 
               const coordName = getStringCoordName(
-                queueState ?? { x: 0, y: 0 }
+                queueState ?? { x: 0, y: 0 },
               );
               snakeState.coordName = coordName;
               bodyState.movementQueue.push({
@@ -308,11 +318,11 @@ export class PlayerManager extends Component {
 
             snakeState.foodGrabber.obj?.setPosition(
               foodGrabberPos.x,
-              foodGrabberPos.y
+              foodGrabberPos.y,
             );
             snakeState.foodGrabber.position.set(
               foodGrabberPos.x,
-              foodGrabberPos.y
+              foodGrabberPos.y,
             );
           }
 

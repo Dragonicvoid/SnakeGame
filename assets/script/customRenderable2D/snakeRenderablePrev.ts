@@ -17,30 +17,20 @@ import {
   Vec2,
   Vec3,
 } from "cc";
-import { EDITOR } from "cc/env";
 
 import { SnakeAssembler } from "../customAssembler/snakeAssembler";
 import { SnakeBody } from "../interface/player";
 
 const { ccclass, property } = _decorator;
 
-@ccclass("SnakeRenderable")
-export class SnakeRenderable extends UIRenderer {
+@ccclass("SnakeRenderablePrev")
+export class SnakeRenderablePrev extends UIRenderer {
   protected _assembler: IAssembler | null = null;
   @property(SpriteFrame)
   public fixError: SpriteFrame = null!;
 
-  @property(Camera)
-  public cam: Camera | null = null;
-
-  @property(Sprite)
-  public renderSprite: Sprite | null = null;
-
   @property(Texture2D)
   public bodyTexture: Texture2D | null = null;
-
-  @property(CCInteger)
-  public pixelated: number = 0;
 
   public snakesBody: SnakeBody[] = [];
 
@@ -52,34 +42,6 @@ export class SnakeRenderable extends UIRenderer {
 
   onLoad() {
     this._useVertexOpacity = true;
-    if (this.cam?.isValid && this.renderSprite?.isValid) {
-      let trans = this.renderSprite.getComponent(UITransform);
-
-      if (!trans?.isValid) return;
-
-      let renderTex = new RenderTexture();
-      renderTex.initialize({
-        width: trans.width * 2 * (10 / (this.pixelated + 10)),
-        height: trans.height * 2 * (10 / (this.pixelated + 10)),
-      });
-
-      this.cam.targetTexture = renderTex;
-
-      let sp = new SpriteFrame();
-      sp.texture = renderTex;
-
-      if (
-        sys.platform == sys.Platform.IOS ||
-        sys.platform == sys.Platform.MACOS
-      ) {
-        sp.flipUVY = true;
-      }
-
-      this.renderSprite.spriteFrame = sp;
-
-      // @ts-ignore
-      this.renderSprite.updateMaterial();
-    }
   }
 
   start() {

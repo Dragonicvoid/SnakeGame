@@ -1,10 +1,10 @@
-import { _decorator, CCInteger, Component, Node, Vec2 } from 'cc';
+import { _decorator, CCInteger, Component, Node, Vec2 } from "cc";
 
-import { ARENA_DEFAULT_VALUE } from '../enum/arenaConfig';
-import { FoodConfig } from '../interface/food';
-import { FoodSpawner } from '../spawner/foodSpawner';
-import { convertPosToCoord } from '../util/arenaConvert';
-import { ObstacleManager } from './obstacleManager';
+import { ARENA_DEFAULT_VALUE } from "../enum/arenaConfig";
+import { FoodConfig } from "../interface/food";
+import { FoodSpawner } from "../spawner/foodSpawner";
+import { convertPosToCoord } from "../util/arenaConvert";
+import { ObstacleManager } from "./obstacleManager";
 
 const { ccclass, property } = _decorator;
 
@@ -39,7 +39,7 @@ export class FoodManager extends Component {
 
     const pos = new Vec2(
       Math.random() * ARENA_DEFAULT_VALUE.WIDTH,
-      Math.random() * ARENA_DEFAULT_VALUE.HEIGHT
+      Math.random() * ARENA_DEFAULT_VALUE.HEIGHT,
     );
     const coord = convertPosToCoord(pos.x, pos.y);
     const isSafe = this.obsManager?.isPosSafeForSpawn(coord);
