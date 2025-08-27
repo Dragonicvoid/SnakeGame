@@ -19,7 +19,12 @@ import {
 } from "cc";
 
 import { SnakeAssembler } from "../customAssembler/snakeAssembler";
+import { ASSET_LOAD_EVENT } from "../enum/event";
+import { SnakeType } from "../enum/snakeType";
 import { SnakeBody } from "../interface/player";
+import { SkinDetail } from "../interface/skinList";
+import { PersistentDataManager } from "../manager/persistentDataManager";
+import { getEffectFromSnakeType, modifyFragShader } from "../util/shaderModify";
 
 const { ccclass, property } = _decorator;
 
@@ -34,6 +39,29 @@ export class SnakeRenderablePrev extends UIRenderer {
 
   public snakesBody: SnakeBody[] = [];
 
+  private _snakeType: SnakeType = SnakeType.NORMAL;
+
+  public set snakeType(val: SnakeType) {
+    this._snakeType = val;
+    this.setCustomMat();
+    this.setSnakeSkin();
+  }
+
+  public get snakeType() {
+    return this._snakeType;
+  }
+
+  private _skinData: SkinDetail | null = null;
+
+  public set skinData(val: SkinDetail | null) {
+    this._skinData = val;
+    this.setSnakeSkin();
+  }
+
+  public get skinData() {
+    return this._skinData;
+  }
+
   private count = 0;
 
   constructor() {
@@ -46,41 +74,57 @@ export class SnakeRenderablePrev extends UIRenderer {
 
   start() {
     profiler.hideStats();
-
     this.markForUpdateRenderData();
-
-    this.scheduleOnce(() => {
-      this.setCustomMat();
-    });
+    this.setCustomMat();
   }
 
   public setCustomMat() {
-    const copyMat = new Material();
-    resources.load(["effect/snakeRender"], EffectAsset, (err, data) => {
-      copyMat.initialize({
-        effectName: "../resources/effect/snakeRender",
+    const effectData = getEffectFromSnakeType(this.snakeType);
+    const mat = new Material();
+    resources.load([effectData.resourceName], EffectAsset, (_, data) => {
+      mat.initialize({
+        effectName: effectData.effectName,
+        defines: {
+          USE_TEXTURE: true,
+        },
       });
 
-      this.customMaterial = copyMat;
-      let trans = this.node.getComponent(UITransform);
-
-      if (!trans?.isValid) return;
-
-      this.customMaterial.setProperty("yratio", trans.height / trans.width);
-      this.customMaterial.setProperty(
-        "reverseRes",
-        new Vec2(1.0 / trans.width, 1.0 / trans.height),
-      );
-
-      if (this.bodyTexture?.isValid) {
-        this.customMaterial.setProperty(
-          "mainTexture",
-          this.bodyTexture.getGFXTexture(),
-        );
-      }
-
+      this.customMaterial = mat;
       this.markForUpdateRenderData();
+      PersistentDataManager.instance.eventTarget.emit(
+        ASSET_LOAD_EVENT.INIT_DEF_MAT_COMPLETE,
+      );
     });
+  }
+
+  public setSnakeSkin() {
+    if (!this.skinData || !this.customMaterial) return;
+
+    let trans = this.node.getComponent(UITransform);
+    if (!trans?.isValid) return;
+    const newMat = modifyFragShader(
+      this.customMaterial,
+      this.skinData.effect_code,
+      this.snakeType,
+      this.skinData.id.toString(),
+    );
+
+    this.customMaterial = newMat ?? null;
+    this.customMaterial?.setProperty("yratio", trans.height / trans.width);
+
+    if (this.skinData.sprite_frame) {
+      resources.load(
+        this.skinData.sprite_frame + "/spriteFrame",
+        SpriteFrame,
+        (err, asset) => {
+          if (!this?.isValid || err) return;
+          this.customMaterial?.setProperty(
+            "mainTexture",
+            asset.getGFXTexture(),
+          );
+        },
+      );
+    }
   }
 
   protected _render(render: any) {
@@ -94,6 +138,7 @@ export class SnakeRenderablePrev extends UIRenderer {
   protected _flushAssembler(): void {
     if (this._assembler === null) {
       this._assembler = new SnakeAssembler();
+      //@ts-ignore
       this._renderData = this._assembler.createData(this);
     }
   }

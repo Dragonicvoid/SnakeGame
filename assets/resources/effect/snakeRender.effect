@@ -17,7 +17,6 @@ CCEffect %{
         cullMode: none
       properties: &props
         yratio: { value: 0.0 }
-        reverseRes: { value: [0.0, 0.0], editor: { type: vec2 } }
         mainTexture: { value: white }
 }%
 
@@ -40,7 +39,6 @@ CCProgram sprite-vs %{
   out vec2 v_prev_pos_norm;
 
   uniform Const {
-    vec2 reverseRes;
     float yratio;
   };
 
@@ -71,6 +69,7 @@ CCProgram sprite-vs %{
 CCProgram sprite-fs %{
   precision highp float;
   #include <builtin/internal/embedded-alpha>
+  #include <builtin/uniforms/cc-global>
 
   in float v_radius;
   in vec2 v_center;
@@ -113,6 +112,10 @@ CCProgram sprite-fs %{
     return 1.0 - a;
   }
 
+  vec4 getTexture(vec2 uv) {
+    return texture(mainTexture, uv);
+  }
+
   vec4 frag () {
     vec2 uv0 = (uv * 2.) - 1.;
     vec4 o = vec4(1., 1., 1., 1.);
@@ -141,7 +144,7 @@ CCProgram sprite-fs %{
     float textureDistX = 1. - (boundary - minDist);
     float textureDistY = when_lt(dNext, dPrev) * fract(hClampNext) + when_ge(dNext, dPrev) * fract(hPrev);
 
-    o *= texture(mainTexture, vec2(textureDistX, textureDistY));
+    o *= getTexture(vec2(textureDistX, textureDistY));
     o.a *= (1.0 - step(boundary, minDist));
     return o;
   }

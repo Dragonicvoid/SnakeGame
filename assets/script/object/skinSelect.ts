@@ -8,7 +8,8 @@ import {
   ScrollView,
 } from "cc";
 
-import { SKIN_SELECT_EVENT } from "../enum/event";
+import { SnakeRenderablePrev } from "../customRenderable2D/snakeRenderablePrev";
+import { ASSET_LOAD_EVENT, SKIN_SELECT_EVENT } from "../enum/event";
 import { SkinList } from "../interface/skinList";
 import { PersistentDataManager } from "../manager/persistentDataManager";
 import { SkinSelectItem } from "./skinSelectItem";
@@ -23,6 +24,9 @@ export class SkinSelect extends Component {
   @property(Prefab)
   private skinPref: Prefab | null = null;
 
+  @property(SnakeRenderablePrev)
+  private snakePrev: SnakeRenderablePrev | null = null;
+
   public skinList: SkinList | null = null;
 
   public itemList: SkinSelectItem[] = [];
@@ -32,6 +36,15 @@ export class SkinSelect extends Component {
   private itemSelCallback = (id: number) => {};
 
   onLoad() {
+    PersistentDataManager.instance.eventTarget.once(
+      ASSET_LOAD_EVENT.INIT_DEF_MAT_COMPLETE,
+      () => {
+        this.initSkinSelect();
+      },
+    );
+  }
+
+  public initSkinSelect() {
     this.setCallback();
 
     if (!this.skinJson?.isValid) return;
@@ -80,6 +93,7 @@ export class SkinSelect extends Component {
   }
 
   private onItemSel(id: number) {
+    let selectedSkin: SkinSelectItem | undefined;
     this.itemList.forEach((item) => {
       if (item.isSelected) {
         item.isSelected = false;
@@ -87,8 +101,13 @@ export class SkinSelect extends Component {
 
       if (item.skinData?.id === id) {
         item.isSelected = true;
+        selectedSkin = item;
       }
     });
+
+    if (!selectedSkin?.skinData || !this.snakePrev?.isValid) return;
+
+    this.snakePrev.skinData = selectedSkin.skinData;
   }
 
   private createPref() {

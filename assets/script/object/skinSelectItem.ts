@@ -14,6 +14,7 @@ import {
 import { SKIN_SELECT_EVENT } from "../enum/event";
 import { SkinDetail } from "../interface/skinList";
 import { PersistentDataManager } from "../manager/persistentDataManager";
+import { modifyFragShader } from "../util/shaderModify";
 
 const { ccclass, property } = _decorator;
 
@@ -28,6 +29,9 @@ export class SkinSelectItem extends Component {
   @property(Node)
   private selectSprite: Node | null = null;
 
+  @property(Material)
+  public defMat: Material | null = null;
+
   @property(CCBoolean)
   public set isSelected(v: boolean) {
     this._isSelected = v;
@@ -41,8 +45,6 @@ export class SkinSelectItem extends Component {
   private _isSelected: boolean = false;
 
   public skinData: SkinDetail | null = null;
-
-  private mat: Material | null = null;
 
   public setSkinData(data: SkinDetail) {
     this.skinData = data;
@@ -64,27 +66,16 @@ export class SkinSelectItem extends Component {
   }
 
   private setSprite() {
-    if (!this.preview?.isValid || !this.skinData) return;
+    if (!this.preview?.isValid || !this.skinData || !this.defMat) return;
 
-    if (!this.mat?.isValid) {
-      this.mat = new Material();
-    }
+    const newMat = modifyFragShader(
+      this.defMat,
+      this.skinData.effect_code,
+      "snakePrev",
+      this.skinData.id.toString(),
+    );
 
-    this.preview.customMaterial = null;
-    if (this.skinData.effect_name) {
-      resources.load([this.skinData.effect_name], EffectAsset, (err, data) => {
-        if (!this.preview?.isValid || !this.skinData) return;
-
-        this.mat?.initialize({
-          effectName: "../resources/" + this.skinData.effect_name,
-          defines: this.skinData.defines,
-        });
-
-        this.preview.customMaterial = this.mat;
-      });
-    } else {
-      this.mat.initDefault();
-    }
+    this.preview.customMaterial = newMat ?? null;
 
     if (this.skinData.sprite_frame) {
       resources.load(
@@ -93,7 +84,10 @@ export class SkinSelectItem extends Component {
         (err, asset) => {
           if (!this.preview?.isValid || err) return;
 
-          this.preview.spriteFrame = asset;
+          this.preview.customMaterial?.setProperty(
+            "mainTexture",
+            asset.getGFXTexture(),
+          );
         },
       );
     }

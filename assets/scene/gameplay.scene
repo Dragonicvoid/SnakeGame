@@ -4924,6 +4924,9 @@
       "__uuid__": "7d55cb53-fe03-4dea-b4df-0e2c05a927c0",
       "__expectedType__": "cc.Prefab"
     },
+    "snakePrev": {
+      "__id__": 127
+    },
     "_id": "e9TykVWfdFMa0eYOJNi3xE"
   },
   {
