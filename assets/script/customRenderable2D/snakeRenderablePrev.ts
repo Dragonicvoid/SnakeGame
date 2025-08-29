@@ -1,30 +1,15 @@
 import {
-  _decorator,
-  Camera,
-  CCInteger,
-  EffectAsset,
-  IAssembler,
-  Material,
-  profiler,
-  RenderTexture,
-  resources,
-  Sprite,
-  SpriteFrame,
-  sys,
-  Texture2D,
-  UIRenderer,
-  UITransform,
-  Vec2,
-  Vec3,
-} from "cc";
+    _decorator, Camera, CCInteger, EffectAsset, IAssembler, Material, profiler, RenderTexture,
+    resources, Sprite, SpriteFrame, sys, Texture2D, UIRenderer, UITransform, Vec2, Vec3
+} from 'cc';
 
-import { SnakeAssembler } from "../customAssembler/snakeAssembler";
-import { ASSET_LOAD_EVENT } from "../enum/event";
-import { SnakeType } from "../enum/snakeType";
-import { SnakeBody } from "../interface/player";
-import { SkinDetail } from "../interface/skinList";
-import { PersistentDataManager } from "../manager/persistentDataManager";
-import { getEffectFromSnakeType, modifyFragShader } from "../util/shaderModify";
+import { SnakeAssembler } from '../customAssembler/snakeAssembler';
+import { ASSET_LOAD_EVENT } from '../enum/event';
+import { SnakeType } from '../enum/snakeType';
+import { SnakeBody } from '../interface/player';
+import { SkinDetail } from '../interface/skinList';
+import { PersistentDataManager } from '../manager/persistentDataManager';
+import { getEffectFromSnakeType, modifyFragShader } from '../util/shaderModify';
 
 const { ccclass, property } = _decorator;
 
@@ -43,8 +28,7 @@ export class SnakeRenderablePrev extends UIRenderer {
 
   public set snakeType(val: SnakeType) {
     this._snakeType = val;
-    this.setCustomMat();
-    this.setSnakeSkin();
+    this.setMatByType();
   }
 
   public get snakeType() {
@@ -62,8 +46,6 @@ export class SnakeRenderablePrev extends UIRenderer {
     return this._skinData;
   }
 
-  private count = 0;
-
   constructor() {
     super();
   }
@@ -73,12 +55,11 @@ export class SnakeRenderablePrev extends UIRenderer {
   }
 
   start() {
-    profiler.hideStats();
     this.markForUpdateRenderData();
-    this.setCustomMat();
+    this.setMatByType();
   }
 
-  public setCustomMat() {
+  public setMatByType() {
     const effectData = getEffectFromSnakeType(this.snakeType);
     const mat = new Material();
     resources.load([effectData.resourceName], EffectAsset, (_, data) => {
@@ -91,8 +72,10 @@ export class SnakeRenderablePrev extends UIRenderer {
 
       this.customMaterial = mat;
       this.markForUpdateRenderData();
+      this.setSnakeSkin();
+
       PersistentDataManager.instance.eventTarget.emit(
-        ASSET_LOAD_EVENT.INIT_DEF_MAT_COMPLETE,
+        ASSET_LOAD_EVENT.INIT_DEF_MAT_COMPLETE
       );
     });
   }
@@ -106,7 +89,7 @@ export class SnakeRenderablePrev extends UIRenderer {
       this.customMaterial,
       this.skinData.effect_code,
       this.snakeType,
-      this.skinData.id.toString(),
+      this.skinData.id.toString()
     );
 
     this.customMaterial = newMat ?? null;
@@ -120,9 +103,9 @@ export class SnakeRenderablePrev extends UIRenderer {
           if (!this?.isValid || err) return;
           this.customMaterial?.setProperty(
             "mainTexture",
-            asset.getGFXTexture(),
+            asset.getGFXTexture()
           );
-        },
+        }
       );
     }
   }
@@ -138,9 +121,9 @@ export class SnakeRenderablePrev extends UIRenderer {
   protected _flushAssembler(): void {
     if (this._assembler === null) {
       this._assembler = new SnakeAssembler();
-      //@ts-ignore
-      this._renderData = this._assembler.createData(this);
     }
+    //@ts-ignore
+    this._renderData = this._assembler.createData(this);
   }
 
   public setSnakeBody(bodies: SnakeBody[]) {

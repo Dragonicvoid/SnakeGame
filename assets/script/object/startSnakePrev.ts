@@ -1,7 +1,8 @@
-import { _decorator, Component, Node, tween, Tween, Vec2 } from "cc";
+import { _decorator, Component, Node, tween, Tween, Vec2 } from 'cc';
 
-import { SnakeRenderablePrev } from "../customRenderable2D/snakeRenderablePrev";
-import { ARENA_DEFAULT_OBJECT_SIZE } from "../enum/arenaConfig";
+import { SnakeRenderablePrev } from '../customRenderable2D/snakeRenderablePrev';
+import { ARENA_DEFAULT_OBJECT_SIZE } from '../enum/arenaConfig';
+import { sleep } from '../util/other';
 
 const { ccclass, property } = _decorator;
 
@@ -10,15 +11,27 @@ export class StartSnakePrev extends Component {
   @property(SnakeRenderablePrev)
   private snakeRender: SnakeRenderablePrev | null = null;
 
-  private snakeSize = ARENA_DEFAULT_OBJECT_SIZE.SNAKE * 1.5;
+  private snakeSize = ARENA_DEFAULT_OBJECT_SIZE.SNAKE;
 
-  private tween: Tween<any> | null = null;
+  private tween: Tween<any>[] = [];
 
-  private danceLength = ARENA_DEFAULT_OBJECT_SIZE.SNAKE * 0.1;
+  private danceLength = ARENA_DEFAULT_OBJECT_SIZE.SNAKE * 0.2;
 
-  private mult = 1;
+  private mult: number[] = [];
 
   private snakeShape = [
+    {
+      position: new Vec2(0, this.snakeSize * 6),
+      radius: this.snakeSize,
+      movementQueue: [],
+      velocity: new Vec2(),
+    },
+    {
+      position: new Vec2(0, this.snakeSize * 5),
+      radius: this.snakeSize,
+      movementQueue: [],
+      velocity: new Vec2(),
+    },
     {
       position: new Vec2(0, this.snakeSize * 4),
       radius: this.snakeSize,
@@ -73,34 +86,53 @@ export class StartSnakePrev extends Component {
       movementQueue: [],
       velocity: new Vec2(),
     },
+    {
+      position: new Vec2(0, this.snakeSize * -5),
+      radius: this.snakeSize,
+      movementQueue: [],
+      velocity: new Vec2(),
+    },
+    {
+      position: new Vec2(0, this.snakeSize * -6),
+      radius: this.snakeSize,
+      movementQueue: [],
+      velocity: new Vec2(),
+    },
   ];
 
   onLoad() {
     this.snakeRender?.setSnakeBody(this.snakeShape);
-    let obj = { val: (Math.PI / 2) * this.mult * -1 };
-    this.animDance(obj);
+    this.startSnakeDance();
   }
 
-  private animDance(obj: any) {
-    this.tween = tween(obj)
+  private async startSnakeDance() {
+    for (let i = 0; i < this.snakeShape.length; i++) {
+      this.mult[i] = 1;
+      let obj = { val: 0 };
+      this.animDance(obj, i);
+      await sleep(250);
+    }
+  }
+
+  private animDance(obj: any, idx: number) {
+    this.tween[idx] = tween(obj)
       .to(
         0.5,
-        { val: (Math.PI / 2) * this.mult },
+        { val: (Math.PI / 2) * this.mult[idx] },
         {
           onUpdate: () => {
-            this.snakeShape?.forEach((body, idx) => {
-              const modifier = idx % 2 === 0 ? 1 : -1;
-              const sinVal = Math.sin(obj.val * modifier);
+            const sinVal = Math.sin(obj.val);
 
-              body.position.set(sinVal * this.danceLength, body.position.y);
-            });
+            this.snakeShape[idx]?.position.set(
+              sinVal * this.danceLength,
+              this.snakeShape[idx].position.y
+            );
           },
           onComplete: () => {
-            this.mult *= -1;
-            this.animDance(obj);
+            this.mult[idx] *= -1;
+            this.animDance(obj, idx);
           },
-          easing: "cubicIn",
-        },
+        }
       )
       .start();
   }

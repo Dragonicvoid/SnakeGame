@@ -1,26 +1,13 @@
 import {
-  _decorator,
-  Camera,
-  CCInteger,
-  EffectAsset,
-  IAssembler,
-  Material,
-  profiler,
-  RenderTexture,
-  resources,
-  Sprite,
-  SpriteFrame,
-  sys,
-  Texture2D,
-  UIRenderer,
-  UITransform,
-  Vec2,
-  Vec3,
-} from "cc";
-import { EDITOR } from "cc/env";
+    _decorator, Camera, CCInteger, EffectAsset, IAssembler, Material, profiler, RenderTexture,
+    resources, Sprite, SpriteFrame, sys, Texture2D, UIRenderer, UITransform, Vec2, Vec3
+} from 'cc';
 
-import { SnakeAssembler } from "../customAssembler/snakeAssembler";
-import { SnakeBody } from "../interface/player";
+import { SnakeAssembler } from '../customAssembler/snakeAssembler';
+import { SnakeType } from '../enum/snakeType';
+import { SnakeBody } from '../interface/player';
+import { SkinDetail } from '../interface/skinList';
+import { getEffectFromSnakeType, modifyFragShader } from '../util/shaderModify';
 
 const { ccclass, property } = _decorator;
 
@@ -36,15 +23,32 @@ export class SnakeRenderable extends UIRenderer {
   @property(Sprite)
   public renderSprite: Sprite | null = null;
 
-  @property(Texture2D)
-  public bodyTexture: Texture2D | null = null;
-
   @property(CCInteger)
   public pixelated: number = 0;
 
   public snakesBody: SnakeBody[] = [];
 
-  private count = 0;
+  private _snakeType: SnakeType = SnakeType.NORMAL;
+
+  public set snakeType(val: SnakeType) {
+    this._snakeType = val;
+    this.setMatByType();
+  }
+
+  public get snakeType() {
+    return this._snakeType;
+  }
+
+  private _skinData: SkinDetail | null = null;
+
+  public set skinData(val: SkinDetail | null) {
+    this._skinData = val;
+    this.setSnakeSkin();
+  }
+
+  public get skinData() {
+    return this._skinData;
+  }
 
   constructor() {
     super();
@@ -52,73 +56,86 @@ export class SnakeRenderable extends UIRenderer {
 
   onLoad() {
     this._useVertexOpacity = true;
-    if (this.cam?.isValid && this.renderSprite?.isValid) {
-      let trans = this.renderSprite.getComponent(UITransform);
+    // if (this.cam?.isValid && this.renderSprite?.isValid) {
+    //   let trans = this.renderSprite.getComponent(UITransform);
 
-      if (!trans?.isValid) return;
+    //   if (!trans?.isValid) return;
 
-      let renderTex = new RenderTexture();
-      renderTex.initialize({
-        width: trans.width * 2 * (10 / (this.pixelated + 10)),
-        height: trans.height * 2 * (10 / (this.pixelated + 10)),
-      });
+    //   let renderTex = new RenderTexture();
+    //   renderTex.initialize({
+    //     width: trans.width * 2 * (10 / (this.pixelated + 10)),
+    //     height: trans.height * 2 * (10 / (this.pixelated + 10)),
+    //   });
 
-      this.cam.targetTexture = renderTex;
+    //   this.cam.targetTexture = renderTex;
 
-      let sp = new SpriteFrame();
-      sp.texture = renderTex;
+    //   let sp = new SpriteFrame();
+    //   sp.texture = renderTex;
 
-      if (
-        sys.platform == sys.Platform.IOS ||
-        sys.platform == sys.Platform.MACOS
-      ) {
-        sp.flipUVY = true;
-      }
+    //   if (
+    //     sys.platform == sys.Platform.IOS ||
+    //     sys.platform == sys.Platform.MACOS
+    //   ) {
+    //     sp.flipUVY = true;
+    //   }
 
-      this.renderSprite.spriteFrame = sp;
+    //   this.renderSprite.spriteFrame = sp;
 
-      // @ts-ignore
-      this.renderSprite.updateMaterial();
-    }
+    //   // @ts-ignore
+    //   this.renderSprite.updateMaterial();
+    // }
   }
 
   start() {
-    profiler.hideStats();
-
     this.markForUpdateRenderData();
+    this.setMatByType();
+  }
 
-    this.scheduleOnce(() => {
-      this.setCustomMat();
+  public setMatByType() {
+    const effectData = getEffectFromSnakeType(this.snakeType);
+    const mat = new Material();
+    resources.load([effectData.resourceName], EffectAsset, (_, data) => {
+      mat.initialize({
+        effectName: effectData.effectName,
+        defines: {
+          USE_TEXTURE: true,
+        },
+      });
+
+      this.customMaterial = mat;
+      this.markForUpdateRenderData();
+      this.setSnakeSkin();
     });
   }
 
-  public setCustomMat() {
-    const copyMat = new Material();
-    resources.load(["effect/snakeRender"], EffectAsset, (err, data) => {
-      copyMat.initialize({
-        effectName: "../resources/effect/snakeRender",
-      });
+  public setSnakeSkin() {
+    if (!this.skinData || !this.customMaterial) return;
 
-      this.customMaterial = copyMat;
-      let trans = this.node.getComponent(UITransform);
+    let trans = this.node.getComponent(UITransform);
+    if (!trans?.isValid) return;
+    const newMat = modifyFragShader(
+      this.customMaterial,
+      this.skinData.effect_code,
+      this.snakeType,
+      this.skinData.id.toString()
+    );
 
-      if (!trans?.isValid) return;
+    this.customMaterial = newMat ?? null;
+    this.customMaterial?.setProperty("yratio", trans.height / trans.width);
 
-      this.customMaterial.setProperty("yratio", trans.height / trans.width);
-      this.customMaterial.setProperty(
-        "reverseRes",
-        new Vec2(1.0 / trans.width, 1.0 / trans.height),
+    if (this.skinData.sprite_frame) {
+      resources.load(
+        this.skinData.sprite_frame + "/spriteFrame",
+        SpriteFrame,
+        (err, asset) => {
+          if (!this?.isValid || err) return;
+          this.customMaterial?.setProperty(
+            "mainTexture",
+            asset.getGFXTexture()
+          );
+        }
       );
-
-      if (this.bodyTexture?.isValid) {
-        this.customMaterial.setProperty(
-          "mainTexture",
-          this.bodyTexture.getGFXTexture(),
-        );
-      }
-
-      this.markForUpdateRenderData();
-    });
+    }
   }
 
   protected _render(render: any) {
@@ -132,8 +149,9 @@ export class SnakeRenderable extends UIRenderer {
   protected _flushAssembler(): void {
     if (this._assembler === null) {
       this._assembler = new SnakeAssembler();
-      this._renderData = this._assembler.createData(this);
     }
+    //@ts-ignore
+    this._renderData = this._assembler.createData(this);
   }
 
   public setSnakeBody(bodies: SnakeBody[]) {

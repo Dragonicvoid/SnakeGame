@@ -1,18 +1,11 @@
-import {
-  _decorator,
-  Component,
-  instantiate,
-  JsonAsset,
-  Node,
-  Prefab,
-  ScrollView,
-} from "cc";
+import { _decorator, Component, instantiate, JsonAsset, math, Node, Prefab, ScrollView } from 'cc';
 
-import { SnakeRenderablePrev } from "../customRenderable2D/snakeRenderablePrev";
-import { ASSET_LOAD_EVENT, SKIN_SELECT_EVENT } from "../enum/event";
-import { SkinList } from "../interface/skinList";
-import { PersistentDataManager } from "../manager/persistentDataManager";
-import { SkinSelectItem } from "./skinSelectItem";
+import { SnakeRenderablePrev } from '../customRenderable2D/snakeRenderablePrev';
+import { ASSET_LOAD_EVENT, SKIN_SELECT_EVENT } from '../enum/event';
+import { SnakeType } from '../enum/snakeType';
+import { SkinDetail, SkinList } from '../interface/skinList';
+import { PersistentDataManager } from '../manager/persistentDataManager';
+import { SkinSelectItem } from './skinSelectItem';
 
 const { ccclass, property } = _decorator;
 
@@ -40,7 +33,7 @@ export class SkinSelect extends Component {
       ASSET_LOAD_EVENT.INIT_DEF_MAT_COMPLETE,
       () => {
         this.initSkinSelect();
-      },
+      }
     );
   }
 
@@ -74,21 +67,21 @@ export class SkinSelect extends Component {
     PersistentDataManager.instance.eventTarget?.on(
       SKIN_SELECT_EVENT.ITEM_SELECTED,
       this.itemSelCallback,
-      this,
+      this
     );
   }
 
   private turnOffListener() {
     PersistentDataManager.instance.eventTarget?.off(
       SKIN_SELECT_EVENT.ITEM_SELECTED,
-      this.itemSelCallback,
+      this.itemSelCallback
     );
   }
 
   private selectDefault() {
     PersistentDataManager.instance.eventTarget?.emit(
       SKIN_SELECT_EVENT.ITEM_SELECTED,
-      1001,
+      2001
     );
   }
 
@@ -123,6 +116,37 @@ export class SkinSelect extends Component {
 
     this.itemList.push(selectSkinItem);
     return { node: node, selectSkinItem: selectSkinItem };
+  }
+
+  public getPlayerSkinData() {
+    return {
+      skin: this.snakePrev?.skinData,
+      type: this.snakePrev?.snakeType,
+    };
+  }
+
+  public getEnemySkinData() {
+    let randomSkin: SkinDetail | undefined = undefined;
+    let snakeType: SnakeType = SnakeType.NORMAL;
+
+    if (this.skinList?.skins) {
+      let skins = [...this.skinList.skins];
+      skins = skins.filter((skin) => {
+        return skin.id !== this.snakePrev?.skinData?.id;
+      });
+
+      randomSkin = skins[Math.floor(Math.random() * 0.99 * skins.length)];
+    }
+
+    const enumVal = Object.keys(SnakeType)
+    const typeRand = Math.floor(Math.random() * enumVal.length);
+    const randomEnumKey = enumVal[typeRand];
+    snakeType = SnakeType[randomEnumKey as SnakeType];
+
+    return {
+      skin: randomSkin,
+      type: snakeType,
+    };
   }
 
   onEnable(): void {
