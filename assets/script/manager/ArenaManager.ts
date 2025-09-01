@@ -1,19 +1,17 @@
-import { _decorator, Component, Node, Vec2 } from "cc";
+import { _decorator, Component, Node, Vec2 } from 'cc';
 
-import { configMaps } from "../defaultValue/map";
+import { configMaps } from '../defaultValue/map';
 import {
-  ARENA_DEFAULT_OBJECT_SIZE,
-  ARENA_DEFAULT_VALUE,
-  ARENA_OBJECT_TYPE,
-} from "../enum/arenaConfig";
-import { FoodConfig } from "../interface/food";
-import { GridConfig, SpikeConfig } from "../interface/gridConfig";
-import { Coordinate, TileMapData } from "../interface/map";
-import { SnakeConfig } from "../interface/player";
-import { convertCoorToArenaPos, getGridIdxByCoord } from "../util/arenaConvert";
-import { GridManager } from "./gridManager";
-import { ObstacleManager } from "./obstacleManager";
-import { PersistentDataManager } from "./persistentDataManager";
+    ARENA_DEFAULT_OBJECT_SIZE, ARENA_DEFAULT_VALUE, ARENA_OBJECT_TYPE
+} from '../enum/arenaConfig';
+import { FoodConfig } from '../interface/food';
+import { GridConfig, SpikeConfig } from '../interface/gridConfig';
+import { Coordinate, TileMapData } from '../interface/map';
+import { SnakeConfig } from '../interface/player';
+import { convertCoorToArenaPos, getGridIdxByCoord } from '../util/arenaConvert';
+import { GridManager } from './gridManager';
+import { ObstacleManager } from './obstacleManager';
+import { PersistentDataManager } from './persistentDataManager';
 
 const { ccclass, property } = _decorator;
 
@@ -41,7 +39,7 @@ export class ArenaManager extends Component {
     this.spawnPos = [];
     this.centerPos = convertCoorToArenaPos(
       Math.floor(map.row / 2),
-      Math.floor(map.col / 2),
+      Math.floor(map.col / 2)
     );
 
     for (let y = map.col - 1; y >= 0; y--) {
@@ -86,7 +84,7 @@ export class ArenaManager extends Component {
     if (!gridToCheck) return null;
 
     gridToCheck.forEach((grid) => {
-      spikes.push(...grid.spikes);
+      spikes.push(...(grid?.spikes ?? []));
     });
 
     if (!spikes.length) return [];
@@ -104,13 +102,13 @@ export class ArenaManager extends Component {
         spike.position.x,
         spike.position.y,
         radius,
-        ARENA_DEFAULT_OBJECT_SIZE.TILE,
+        ARENA_DEFAULT_OBJECT_SIZE.TILE
       );
 
       if (detectObstacle) {
         const obstacleAngle = Math.atan2(
           botHeadPos.position.y - spike.position.y,
-          botHeadPos.position.x - spike.position.x,
+          botHeadPos.position.x - spike.position.x
         );
         if (duplicateAngleDetection.indexOf(obstacleAngle) === -1) {
           duplicateAngleDetection.push(obstacleAngle);
@@ -129,7 +127,7 @@ export class ArenaManager extends Component {
     x2: number,
     y2: number,
     circleRadius: number,
-    boxWidth: number,
+    boxWidth: number
   ) {
     const deltaX = Math.abs(x1 - x2);
     const deltaY = Math.abs(y1 - y2);
@@ -156,7 +154,7 @@ export class ArenaManager extends Component {
 
   public getNearestDetectedFood(
     player: SnakeConfig,
-    radius: number,
+    radius: number
   ): FoodConfig | null {
     let result: FoodConfig | null = null;
 
@@ -172,7 +170,7 @@ export class ArenaManager extends Component {
 
     let nearestLength = Number.MAX_VALUE;
     gridToCheck.forEach((grid) => {
-      grid.foods.forEach((f) => {
+      grid?.foods.forEach((f) => {
         const distance = Vec2.distance(f.state.position, playerHead.position);
         if (!result || distance < nearestLength) {
           result = f;
@@ -187,14 +185,14 @@ export class ArenaManager extends Component {
   private getGridsToCheck(pos: Coordinate) {
     if (!this.gridManager?.isValid) return;
 
-    const gridToCheck = new Set<GridConfig>();
+    const gridToCheck = new Set<GridConfig | undefined>();
 
     // check its surroundings
     for (let i = -1; i <= 1; i++) {
       for (let j = -1; j <= 1; j++) {
         const gridIdx = getGridIdxByCoord({
           x: pos.x + j * ARENA_DEFAULT_VALUE.GRID_WIDTH,
-          y: pos.x + i * ARENA_DEFAULT_VALUE.GRID_HEIGHT,
+          y: pos.y + i * ARENA_DEFAULT_VALUE.GRID_HEIGHT,
         });
 
         if (gridIdx === undefined) continue;

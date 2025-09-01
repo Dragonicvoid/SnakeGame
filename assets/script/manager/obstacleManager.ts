@@ -1,27 +1,15 @@
-import {
-  _decorator,
-  CCBoolean,
-  Component,
-  instantiate,
-  Node,
-  UITransform,
-  Vec2,
-} from "cc";
+import { _decorator, CCBoolean, Component, instantiate, Node, UITransform, Vec2 } from 'cc';
 
 import {
-  ARENA_DEFAULT_OBJECT_SIZE,
-  ARENA_DEFAULT_VALUE,
-  ARENA_OBJECT_TYPE,
-} from "../enum/arenaConfig";
-import { Coordinate, TileMapData } from "../interface/map";
-import { ObstacleSpriteRef } from "../interface/other";
-import { GameplayCamera } from "../object/gameplayCamera";
+    ARENA_DEFAULT_OBJECT_SIZE, ARENA_DEFAULT_VALUE, ARENA_OBJECT_TYPE
+} from '../enum/arenaConfig';
+import { Coordinate, TileMapData } from '../interface/map';
+import { ObstacleSpriteRef } from '../interface/other';
+import { GameplayCamera } from '../object/gameplayCamera';
 import {
-  convertArenaPosToCoord,
-  convertCoorToArenaPos,
-  convertPosToArenaPos,
-  getGridIdxByCoord,
-} from "../util/arenaConvert";
+    convertArenaPosToCoord, convertCoorToArenaPos, convertPosToArenaPos, getGridIdxByCoord
+} from '../util/arenaConvert';
+import { GridManager } from './gridManager';
 
 const { ccclass, property } = _decorator;
 
@@ -37,6 +25,9 @@ export class ObstacleManager extends Component {
 
   @property(GameplayCamera)
   private readonly gameplayCamera?: GameplayCamera;
+
+  @property(GridManager)
+  private gridManager: GridManager | null = null;
 
   private obstacleMap = new Array<TileMapData[]>();
 
@@ -84,6 +75,14 @@ export class ObstacleManager extends Component {
     if (!spikeUiTransform) return;
     const { width, height } = spikeUiTransform;
     this.setObstacleMapObject(coor.x, coor.y, ARENA_OBJECT_TYPE.SPIKE);
+    const gridPos = getGridIdxByCoord({
+      x: coor.x,
+      y: coor.y,
+    });
+    this.gridManager?.addSpike({
+      gridIndex: gridPos ?? 0,
+      position: convertCoorToArenaPos(coor.x, coor.y),
+    });
     const spike = {
       parent: obstacleParent,
       position: convertCoorToArenaPos(coor.x, coor.y),
@@ -130,7 +129,7 @@ export class ObstacleManager extends Component {
     x: number,
     y: number,
     type: ARENA_OBJECT_TYPE,
-    id?: number,
+    id?: number
   ) {
     const idxX = Math.floor(x);
     const idxY = Math.floor(y);
@@ -149,7 +148,7 @@ export class ObstacleManager extends Component {
 
   private spawnObstacleSprite(
     spriteRef: ObstacleSpriteRef,
-    obstacleType: ARENA_OBJECT_TYPE,
+    obstacleType: ARENA_OBJECT_TYPE
   ) {
     const isSpriteAlreadySpawned = spriteRef.sprite;
 

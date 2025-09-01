@@ -1,5 +1,6 @@
-import { Sprite, Vec3 } from "cc";
-import { FoodConfig } from "./food";
+import { Sprite, Vec2, Vec3 } from 'cc';
+
+import { FoodConfig } from './food';
 
 export type GridConfig = {
   x1: number;
@@ -14,7 +15,6 @@ export type GridConfig = {
 };
 
 export type SpikeConfig = {
-  sprite: Sprite;
   gridIndex: number;
-  position: Vec3;
+  position: Vec2;
 };

@@ -1,36 +1,24 @@
 import {
-  _decorator,
-  Collider2D,
-  Component,
-  Contact2DType,
-  director,
-  game,
-  math,
-  Node,
-  PhysicsGroup,
-  PhysicsGroup2D,
-  PhysicsSystem2D,
-  RigidBody2D,
-  Vec2,
-  Vec3,
-} from "cc";
+    _decorator, Collider2D, Component, Contact2DType, director, game, math, Node, PhysicsGroup,
+    PhysicsGroup2D, PhysicsSystem2D, RigidBody2D, Vec2, Vec3
+} from 'cc';
 
-import { BaseAction } from "../action/baseAction";
-import { BOT_CONFIG } from "../enum/botConfig";
-import { DIFFICULTY } from "../enum/difficulty";
-import { GAME_EVENT } from "../enum/event";
-import { PHYSICS_GROUP } from "../enum/physics";
-import { PlannerFactor } from "../interface/ai";
-import { FoodConfig } from "../interface/food";
-import { GameOverData } from "../interface/gameOver";
-import { SnakeConfig } from "../interface/player";
-import { BotPlanner } from "../util/botPlanner";
-import { ArenaManager } from "./ArenaManager";
-import { FoodManager } from "./foodManager";
-import { GridManager } from "./gridManager";
-import { PersistentDataManager } from "./persistentDataManager";
-import { PlayerManager } from "./playerManager";
-import { UIManager } from "./uiManager";
+import { BaseAction } from '../action/baseAction';
+import { BOT_CONFIG } from '../enum/botConfig';
+import { DIFFICULTY } from '../enum/difficulty';
+import { GAME_EVENT } from '../enum/event';
+import { PHYSICS_GROUP } from '../enum/physics';
+import { PlannerFactor } from '../interface/ai';
+import { FoodConfig } from '../interface/food';
+import { GameOverData } from '../interface/gameOver';
+import { SnakeConfig } from '../interface/player';
+import { BotPlanner } from '../util/botPlanner';
+import { ArenaManager } from './ArenaManager';
+import { FoodManager } from './foodManager';
+import { GridManager } from './gridManager';
+import { PersistentDataManager } from './persistentDataManager';
+import { PlayerManager } from './playerManager';
+import { UIManager } from './uiManager';
 
 const { ccclass, property } = _decorator;
 
@@ -118,6 +106,7 @@ export class GameManager extends Component {
   public goToMainMenu() {
     this.foodManager?.removeAllFood();
     this.playerManager?.removeAllPlayers();
+    this.foodManager?.removeAllFood();
     this.uiManager?.showStartUI();
     this.uiManager?.showEndUI(undefined, false);
   }
@@ -205,9 +194,7 @@ export class GameManager extends Component {
     this.uiManager?.showEndUI(data);
   }
 
-  private handleBotLogic(snake: SnakeConfig, skipTurnRadius = false) {
-    if (!skipTurnRadius) return;
-
+  private handleBotLogic(snake: SnakeConfig) {
     if (!snake.isBot) return;
 
     if (
@@ -225,7 +212,7 @@ export class GameManager extends Component {
     // this.processBotBoosterUsage(player);
 
     //if bot in the middle of turning sequene, disable the turn logic
-    if (snake.state.inDirectionChange === true && !skipTurnRadius) return;
+    if (snake.state.inDirectionChange === true) return;
     //detect player and food
     detectedPlayer = this.playerManager.findNearestPlayerTowardPoint(
       snake,

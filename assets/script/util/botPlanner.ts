@@ -1,7 +1,9 @@
-import { _decorator, Component, Node } from "cc";
-import { BaseAction } from "../action/baseAction";
-import { PlannerFactor } from "../interface/ai";
-import { PriorityQueue } from "./priorityQueue";
+import { _decorator, Component, Node } from 'cc';
+
+import { BaseAction } from '../action/baseAction';
+import { PlannerFactor } from '../interface/ai';
+import { PriorityQueue } from './priorityQueue';
+
 const { ccclass, property } = _decorator;
 
 @ccclass("BotPlanner")

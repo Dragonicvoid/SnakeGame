@@ -1,9 +1,9 @@
-import { _decorator, Component, Node } from "cc";
+import { _decorator, Component, Node } from 'cc';
 
-import { ACTION_SCORE } from "../enum/actionScore";
-import { PlannerFactor } from "../interface/ai";
-import { SnakeActionData, SnakeConfig } from "../interface/player";
-import { BaseAction } from "./baseAction";
+import { ACTION_SCORE } from '../enum/actionScore';
+import { PlannerFactor } from '../interface/ai';
+import { SnakeActionData, SnakeConfig } from '../interface/player';
+import { BaseAction } from './baseAction';
 
 const { ccclass, property } = _decorator;
 
@@ -12,6 +12,9 @@ export class NormalAction extends BaseAction {
   public init() {}
 
   public run(player: SnakeConfig, data: SnakeActionData) {
+    this.player = player;
+    this.currData = data;
+
     const detectedObs = [...data.detectedWall, ...data.detectedPlayer];
     const dodgeAngle = this.processBotMovementByFatalObs(player, detectedObs);
 
@@ -25,6 +28,6 @@ export class NormalAction extends BaseAction {
       return ACTION_SCORE.OBSTACLE_DETECTED;
     }
 
-    return ACTION_SCORE.GO_TO_PLAYER_DEFAULT;
+    return ACTION_SCORE.NORMAL_ACTION;
   }
 }

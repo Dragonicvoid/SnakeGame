@@ -1,31 +1,23 @@
 import {
-  _decorator,
-  clamp,
-  Collider2D,
-  Component,
-  game,
-  instantiate,
-  Node,
-  Prefab,
-  RigidBody2D,
-  Vec2,
-  Vec3,
-} from "cc";
+    _decorator, clamp, Collider2D, Component, game, instantiate, Node, Prefab, RigidBody2D, Vec2,
+    Vec3
+} from 'cc';
 
-import { GoToFood } from "../action/goToFood";
-import { GoToPlayerAction } from "../action/goToPlayer";
-import { NormalAction } from "../action/normalAction";
-import { SnakeRenderable } from "../customRenderable2D/snakeRenderable";
-import { ARENA_DEFAULT_OBJECT_SIZE } from "../enum/arenaConfig";
-import { BOT_ACTION } from "../enum/botAction";
-import { PHYSICS_GROUP } from "../enum/physics";
-import { SNAKE_CONFIG } from "../enum/snakeConfig";
-import { SnakeType } from "../enum/snakeType";
-import { Coordinate } from "../interface/map";
-import { SnakeBody, SnakeConfig, SnakeState } from "../interface/player";
-import { SkinSelect } from "../object/skinSelect";
-import { getStringCoordName } from "../util/aStar";
-import { ArenaManager } from "./ArenaManager";
+import { GoToFood } from '../action/goToFood';
+import { GoToPlayerAction } from '../action/goToPlayer';
+import { NormalAction } from '../action/normalAction';
+import { SnakeRenderable } from '../customRenderable2D/snakeRenderable';
+import { ARENA_DEFAULT_OBJECT_SIZE } from '../enum/arenaConfig';
+import { BOT_ACTION } from '../enum/botAction';
+import { PHYSICS_GROUP } from '../enum/physics';
+import { SNAKE_CONFIG } from '../enum/snakeConfig';
+import { SnakeType } from '../enum/snakeType';
+import { Coordinate } from '../interface/map';
+import { SnakeBody, SnakeConfig, SnakeState } from '../interface/player';
+import { SkinSelect } from '../object/skinSelect';
+import { normalize } from '../util/algorithm';
+import { getStringCoordName } from '../util/aStar';
+import { ArenaManager } from './ArenaManager';
 
 const { ccclass, property } = _decorator;
 
@@ -152,6 +144,7 @@ export class PlayerManager extends Component {
       isBot: isBot,
       isAlive: true,
       render: isBot ? this.enemyRender : this.playerRender,
+      action: new NormalAction(),
       possibleActions: isBot
         ? new Map([
             [BOT_ACTION.NORMAL, new NormalAction()],
@@ -198,7 +191,7 @@ export class PlayerManager extends Component {
 
   public findNearestPlayerTowardPoint(
     currentPlayer: SnakeConfig,
-    radius: number,
+    radius: number
   ) {
     const duplicateAngleDetection: Array<number> = [];
     const detectedObstacleAngles: Array<number> = [];
@@ -217,13 +210,13 @@ export class PlayerManager extends Component {
           otherPlayer.state.body[i].position.x,
           otherPlayer.state.body[i].position.y,
           radius,
-          SNAKE_CONFIG.RADIUS,
+          SNAKE_CONFIG.RADIUS
         );
 
         if (detectOtherPlayer) {
           const obstacleAngle = Math.atan2(
             botHeadPos.position.y - otherPlayer.state.body[i].position.y,
-            botHeadPos.position.x - otherPlayer.state.body[i].position.x,
+            botHeadPos.position.x - otherPlayer.state.body[i].position.x
           );
           if (duplicateAngleDetection.indexOf(obstacleAngle) === -1) {
             duplicateAngleDetection.push(obstacleAngle);
@@ -242,7 +235,7 @@ export class PlayerManager extends Component {
     x2: number,
     y2: number,
     r1: number,
-    r2: number,
+    r2: number
   ) {
     const deltaX = x2 - x1;
     const deltaY = y2 - y1;
@@ -268,7 +261,7 @@ export class PlayerManager extends Component {
       direction?: Vec2;
       speed?: number;
       initialMovement?: boolean;
-    },
+    }
   ) {
     if (option?.speed === -1) return;
     const player = this.playerList.find((x) => x.id === playerId);
@@ -280,14 +273,20 @@ export class PlayerManager extends Component {
 
     if (option) {
       if (option.direction) {
-        movDir.x = option.direction.x * pState.speed;
-        movDir.y = option.direction.y * pState.speed;
+        const normDevider = Math.max(
+          Math.abs(option.direction.x),
+          Math.abs(option.direction.y)
+        );
+
+        movDir.x = (option.direction.x / normDevider) * pState.speed;
+        movDir.y = (option.direction.y / normDevider) * pState.speed;
       }
     }
     if (!pState.inputDirection) pState.inputDirection = new Vec2();
     pState.inputDirection.x = movDir.x;
     pState.inputDirection.y = movDir.y;
 
+    console.log(movDir);
     const velocity = new Vec2(movDir.x, movDir.y);
 
     if (option?.initialMovement) {
@@ -333,7 +332,7 @@ export class PlayerManager extends Component {
           if (ii !== 0) {
             let dist = Vec2.distance(
               bodyState.position,
-              new Vec2(headX, headY),
+              new Vec2(headX, headY)
             );
 
             if (dist > ARENA_DEFAULT_OBJECT_SIZE.SNAKE) {
@@ -345,13 +344,13 @@ export class PlayerManager extends Component {
                 };
                 dist = Vec2.distance(
                   new Vec2(headX, headY),
-                  new Vec2(queueState.x, queueState.y),
+                  new Vec2(queueState.x, queueState.y)
                 );
               } while (dist > ARENA_DEFAULT_OBJECT_SIZE.SNAKE);
 
               bodyState.obj?.setPosition(
                 queueState?.x ?? 0,
-                queueState?.y ?? 0,
+                queueState?.y ?? 0
               );
             }
 
@@ -373,22 +372,22 @@ export class PlayerManager extends Component {
             const newDir = snakeDir.multiply(
               new Vec2(
                 ARENA_DEFAULT_OBJECT_SIZE.TILE * delta,
-                ARENA_DEFAULT_OBJECT_SIZE.TILE * delta,
-              ),
+                ARENA_DEFAULT_OBJECT_SIZE.TILE * delta
+              )
             );
             bodyState.obj?.setPosition(
               headPos.x + newDir.x,
-              headPos.y + newDir.y,
+              headPos.y + newDir.y
             );
             const foodGrabberPos = this.getFoodGrabberPosition(bodyState);
 
             snakeState.foodGrabber.obj?.setPosition(
               foodGrabberPos.x,
-              foodGrabberPos.y,
+              foodGrabberPos.y
             );
             snakeState.foodGrabber.position.set(
               foodGrabberPos.x,
-              foodGrabberPos.y,
+              foodGrabberPos.y
             );
           }
 
@@ -425,7 +424,7 @@ export class PlayerManager extends Component {
 
   public getPlayerByBody(node: Node) {
     return this.playerList.find((item) =>
-      item.state.body.find((body) => body.obj === node),
+      item.state.body.find((body) => body.obj === node)
     );
   }
 }
