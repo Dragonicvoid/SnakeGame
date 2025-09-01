@@ -568,7 +568,7 @@
     "_shutter": 7,
     "_iso": 0,
     "_screenScale": 1,
-    "_visibility": 1048587,
+    "_visibility": 1048577,
     "_targetTexture": null,
     "_postProcess": null,
     "_usePostProcess": false,
@@ -1224,7 +1224,7 @@
       "__id__": 11
     },
     "_children": [],
-    "_active": false,
+    "_active": true,
     "_components": [
       {
         "__id__": 32
@@ -1315,7 +1315,7 @@
       "__id__": 11
     },
     "_children": [],
-    "_active": false,
+    "_active": true,
     "_components": [
       {
         "__id__": 34
@@ -2322,7 +2322,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 4,
+    "_layer": 2,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -4173,7 +4173,7 @@
     "_string": "Play",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
-    "_actualFontSize": 49.888888888888886,
+    "_actualFontSize": 40,
     "_fontSize": 40,
     "_fontFamily": "Arial",
     "_lineHeight": 60,
@@ -4466,7 +4466,7 @@
     "__prefab": null,
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 222.2845418203647,
+      "width": 222.32421875,
       "height": 75.6
     },
     "_anchorPoint": {
@@ -4499,7 +4499,7 @@
     "_string": "Select Skin :",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
-    "_actualFontSize": 49.888888888888886,
+    "_actualFontSize": 40,
     "_fontSize": 40,
     "_fontFamily": "Arial",
     "_lineHeight": 60,

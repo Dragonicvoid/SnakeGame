@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Vec2, Vec3 } from 'cc';
+import { _decorator, Component, game, Node, Vec2, Vec3 } from 'cc';
 
 import { BaseAction } from '../action/baseAction';
 import { BOT_CONFIG } from '../enum/botConfig';
@@ -58,11 +58,13 @@ export class GameManager extends Component {
 
     this.foodManager?.startSpawningFood();
 
-    // this.schedule(() => {
-    //   this.playerManager?.playerList.forEach((snake) => {
-    //     this.handleBotLogic(snake);
-    //   });
-    // });
+    this.schedule(() => {
+      const deltaTime = Math.min(1/60, game.deltaTime);
+      this.playerManager?.playerList.forEach((snake) => {
+        this.handleBotLogic(snake);
+        this.playerManager?.updateCoordinate(deltaTime)
+      });
+    });
   }
 
   private handleBotLogic(snake: SnakeConfig, skipTurnRadius = false) {

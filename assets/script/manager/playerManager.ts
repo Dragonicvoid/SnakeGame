@@ -1,7 +1,11 @@
 import { _decorator, clamp, Component, game, instantiate, Node, Prefab, Vec2, Vec3 } from 'cc';
 
+import { GoToFood } from '../action/goToFood';
+import { GoToPlayerAction } from '../action/goToPlayer';
+import { NormalAction } from '../action/normalAction';
 import { SnakeRenderable } from '../customRenderable2D/snakeRenderable';
 import { ARENA_DEFAULT_OBJECT_SIZE } from '../enum/arenaConfig';
+import { BOT_ACTION } from '../enum/botAction';
 import { SNAKE_CONFIG } from '../enum/snakeConfig';
 import { SnakeType } from '../enum/snakeType';
 import { Coordinate } from '../interface/map';
@@ -80,10 +84,7 @@ export class PlayerManager extends Component {
           [Math.cos(angle), -Math.sin(angle)],
           [Math.sin(angle), Math.cos(angle)],
         ];
-        newPos = new Vec2(
-          posVec.x * rotMat[0][0] + posVec.y * rotMat[0][1] + prevPos.x,
-          posVec.x * rotMat[1][0] + posVec.y * rotMat[1][1] + prevPos.y
-        );
+        newPos = new Vec2(prevPos.x, prevPos.y);
         const newBody = {
           position: newPos,
           radius: radius,
@@ -109,7 +110,7 @@ export class PlayerManager extends Component {
       body: bodies,
       movementDir: moveDir,
       inputDirection: new Vec2(),
-      speed: 0,
+      speed: 1,
       coordName: "",
       inDirectionChange: false,
     };
@@ -120,6 +121,11 @@ export class PlayerManager extends Component {
       isBot: isBot,
       isAlive: true,
       render: this.playerRender,
+      possibleActions: new Map([
+        [BOT_ACTION.NORMAL, new NormalAction()],
+        [BOT_ACTION.CHASE_PLAYER, new GoToPlayerAction()],
+        [BOT_ACTION.EAT, new GoToFood()],
+      ]),
     };
 
     this.playerList.push(player);
@@ -139,6 +145,11 @@ export class PlayerManager extends Component {
       this.playerRender.skinData = skinData?.skin ?? null;
       this.playerRender?.setSnakeBody(bodies);
     }
+
+    this.handleMovement(player.id, {
+      direction: moveDir,
+      initialMovement: true,
+    });
   }
 
   public resetPlayers() {}
@@ -222,27 +233,23 @@ export class PlayerManager extends Component {
     if (!player) return;
     const pState = player.state;
     const physicBody = pState.body;
-    const stateVelocity = pState.movementDir;
+    const movDir = pState.movementDir;
     if (!physicBody) return;
+
     if (option) {
       if (option.direction) {
-        const limitDirX = clamp(option.direction.x, -100, 100);
-        const limitDirY = clamp(option.direction.y, -100, 100);
-
-        stateVelocity.x = (limitDirX * pState.speed) / 100;
-        stateVelocity.y = (limitDirY * pState.speed) / 100;
+        movDir.x = option.direction.x * pState.speed;
+        movDir.y = option.direction.y * pState.speed;
       }
     }
     if (!pState.inputDirection) pState.inputDirection = new Vec2();
-    pState.inputDirection.x = stateVelocity.x;
-    pState.inputDirection.y = stateVelocity.y;
+    pState.inputDirection.x = movDir.x;
+    pState.inputDirection.y = movDir.y;
 
-    const velocity = new Vec2();
+    const velocity = new Vec2(movDir.x, movDir.y);
 
     if (option?.initialMovement) {
-      for (let i = 0; i < physicBody.length; i++) {
-        physicBody[i].velocity = new Vec2(velocity);
-      }
+      physicBody[0].velocity = new Vec2(velocity);
       if (player.isBot && option.direction)
         pState.movementDir = option.direction;
     } else {
@@ -261,14 +268,11 @@ export class PlayerManager extends Component {
 
   // defaulted to 60 fps
   updateCoordinate(delta = 0.016) {
-    const mapData = this.arenaManager?.mapData;
-    const { TILE } = ARENA_DEFAULT_OBJECT_SIZE;
     for (let i = 0; i < this.playerList.length; i++) {
       const snake = this.playerList[i];
       const snakeState = snake.state;
       let headX = 0;
       let headY = 0;
-      let counterHead = 0;
 
       for (let ii = 0; ii < snakeState.body.length; ii++) {
         const bodyState = snakeState.body[ii];
@@ -285,41 +289,56 @@ export class PlayerManager extends Component {
 
         if (bodyState) {
           if (ii !== 0) {
-            const movePerTick = delta;
-            const qLen =
-              ((delta / (game.frameTime / 1000)) *
-                ARENA_DEFAULT_OBJECT_SIZE.SNAKE) /
-              movePerTick;
-            const num = Math.ceil(bodyState.movementQueue.length - qLen);
+            let dist = Vec2.distance(
+              bodyState.position,
+              new Vec2(headX, headY)
+            );
 
-            if (num > 0) {
-              bodyState.movementQueue = bodyState.movementQueue.slice(num);
-              const queueState = bodyState.movementQueue.shift();
+            if (dist > ARENA_DEFAULT_OBJECT_SIZE.SNAKE) {
+              let queueState = { x: headX, y: headY };
+              do {
+                queueState = bodyState.movementQueue.shift() ?? {
+                  x: headX,
+                  y: headY,
+                };
+                dist = Vec2.distance(
+                  new Vec2(headX, headY),
+                  new Vec2(queueState.x, queueState.y)
+                );
+              } while (dist > ARENA_DEFAULT_OBJECT_SIZE.SNAKE);
 
               bodyState.obj?.setPosition(
                 queueState?.x ?? 0,
                 queueState?.y ?? 0
               );
-
-              const coordName = getStringCoordName(
-                queueState ?? { x: 0, y: 0 }
-              );
-              snakeState.coordName = coordName;
-              bodyState.movementQueue.push({
-                x: headX,
-                y: headY,
-              });
-            } else {
-              bodyState.movementQueue.push({
-                x: headX,
-                y: headY,
-              });
             }
+
+            const coordName = getStringCoordName({
+              x: bodyState.obj?.x ?? headX,
+              y: bodyState.obj?.y ?? headY,
+            });
+            snakeState.coordName = coordName;
+            bodyState.movementQueue.push({
+              x: headX,
+              y: headY,
+            });
           }
 
           if (ii === 0) {
-            const headPos = bodyState;
-            const foodGrabberPos = this.getFoodGrabberPosition(headPos);
+            const headPos = bodyState.position;
+
+            const snakeDir = new Vec2(bodyState.velocity);
+            const newDir = snakeDir.multiply(
+              new Vec2(
+                ARENA_DEFAULT_OBJECT_SIZE.TILE * delta,
+                ARENA_DEFAULT_OBJECT_SIZE.TILE * delta
+              )
+            );
+            bodyState.obj?.setPosition(
+              headPos.x + newDir.x,
+              headPos.y + newDir.y
+            );
+            const foodGrabberPos = this.getFoodGrabberPosition(bodyState);
 
             snakeState.foodGrabber.obj?.setPosition(
               foodGrabberPos.x,

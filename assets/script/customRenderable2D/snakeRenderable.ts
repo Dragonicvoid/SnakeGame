@@ -56,34 +56,34 @@ export class SnakeRenderable extends UIRenderer {
 
   onLoad() {
     this._useVertexOpacity = true;
-    // if (this.cam?.isValid && this.renderSprite?.isValid) {
-    //   let trans = this.renderSprite.getComponent(UITransform);
+    if (this.cam?.isValid && this.renderSprite?.isValid) {
+      let trans = this.renderSprite.getComponent(UITransform);
 
-    //   if (!trans?.isValid) return;
+      if (!trans?.isValid) return;
 
-    //   let renderTex = new RenderTexture();
-    //   renderTex.initialize({
-    //     width: trans.width * 2 * (10 / (this.pixelated + 10)),
-    //     height: trans.height * 2 * (10 / (this.pixelated + 10)),
-    //   });
+      let renderTex = new RenderTexture();
+      renderTex.initialize({
+        width: trans.width * 2 * (10 / (this.pixelated + 10)),
+        height: trans.height * 2 * (10 / (this.pixelated + 10)),
+      });
 
-    //   this.cam.targetTexture = renderTex;
+      this.cam.targetTexture = renderTex;
 
-    //   let sp = new SpriteFrame();
-    //   sp.texture = renderTex;
+      let sp = new SpriteFrame();
+      sp.texture = renderTex;
 
-    //   if (
-    //     sys.platform == sys.Platform.IOS ||
-    //     sys.platform == sys.Platform.MACOS
-    //   ) {
-    //     sp.flipUVY = true;
-    //   }
+      if (
+        sys.platform == sys.Platform.IOS ||
+        sys.platform == sys.Platform.MACOS
+      ) {
+        sp.flipUVY = true;
+      }
 
-    //   this.renderSprite.spriteFrame = sp;
+      this.renderSprite.spriteFrame = sp;
 
-    //   // @ts-ignore
-    //   this.renderSprite.updateMaterial();
-    // }
+      // @ts-ignore
+      this.renderSprite.updateMaterial();
+    }
   }
 
   start() {
