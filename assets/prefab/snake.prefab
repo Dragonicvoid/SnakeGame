@@ -128,7 +128,7 @@
     "_contentSize": {
       "__type__": "cc.Size",
       "width": 40,
-      "height": 4
+      "height": 40
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -153,12 +153,12 @@
     "__prefab": {
       "__id__": 6
     },
-    "enabledContactListener": false,
+    "enabledContactListener": true,
     "bullet": false,
     "awakeOnLoad": true,
     "_group": 4,
     "_type": 1,
-    "_allowSleep": true,
+    "_allowSleep": false,
     "_gravityScale": 0,
     "_linearDamping": 0,
     "_angularDamping": 0,

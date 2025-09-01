@@ -1,10 +1,10 @@
-import { _decorator, CCInteger, Component, Node, Vec2 } from "cc";
+import { _decorator, CCInteger, Component, Node, Vec2 } from 'cc';
 
-import { ARENA_DEFAULT_VALUE } from "../enum/arenaConfig";
-import { FoodConfig } from "../interface/food";
-import { FoodSpawner } from "../spawner/foodSpawner";
-import { convertPosToCoord } from "../util/arenaConvert";
-import { ObstacleManager } from "./obstacleManager";
+import { ARENA_DEFAULT_VALUE } from '../enum/arenaConfig';
+import { FoodConfig } from '../interface/food';
+import { FoodSpawner } from '../spawner/foodSpawner';
+import { convertPosToCoord } from '../util/arenaConvert';
+import { ObstacleManager } from './obstacleManager';
 
 const { ccclass, property } = _decorator;
 
@@ -26,10 +26,18 @@ export class FoodManager extends Component {
 
   public foodList: FoodConfig[] = [];
 
+  private foodSpawningCb = (retries?: number) => {};
+
+  start() {
+    this.foodSpawningCb = this.spawnRandomFood.bind(this);
+  }
+
   public startSpawningFood() {
-    this.schedule(() => {
-      this.spawnRandomFood();
-    }, this.foodSpawnInterval);
+    this.schedule(this.foodSpawningCb, this.foodSpawnInterval);
+  }
+
+  public stopSpawningFood() {
+    this.unschedule(this.foodSpawningCb);
   }
 
   private spawnRandomFood(retries: number = 0) {
@@ -39,7 +47,7 @@ export class FoodManager extends Component {
 
     const pos = new Vec2(
       Math.random() * ARENA_DEFAULT_VALUE.WIDTH,
-      Math.random() * ARENA_DEFAULT_VALUE.HEIGHT,
+      Math.random() * ARENA_DEFAULT_VALUE.HEIGHT
     );
     const coord = convertPosToCoord(pos.x, pos.y);
     const isSafe = this.obsManager?.isPosSafeForSpawn(coord);
@@ -50,6 +58,28 @@ export class FoodManager extends Component {
     }
 
     this.foodSpawner.spawn(pos);
+  }
+
+  public processEatenFood(
+    playerId: string,
+    food: FoodConfig
+  ): number | undefined {
+    return undefined;
+  }
+
+  private removeFood(food: FoodConfig) {
+    this.foodSpawner?.removeFood(food.object);
+    this.foodList.filter((item) => {
+      item.id !== food.id;
+    });
+  }
+
+  public removeAllFood() {
+    this.foodList.forEach((food) => {
+      this.foodSpawner?.removeFood(food.object);
+    });
+
+    this.foodList = [];
   }
 
   public getFoodById(id: string) {

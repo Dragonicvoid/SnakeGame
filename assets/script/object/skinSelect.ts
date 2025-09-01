@@ -3,6 +3,7 @@ import { _decorator, Component, instantiate, JsonAsset, math, Node, Prefab, Scro
 import { SnakeRenderablePrev } from '../customRenderable2D/snakeRenderablePrev';
 import { ASSET_LOAD_EVENT, SKIN_SELECT_EVENT } from '../enum/event';
 import { SnakeType } from '../enum/snakeType';
+import { SnakeTypeAndSkin } from '../interface/player';
 import { SkinDetail, SkinList } from '../interface/skinList';
 import { PersistentDataManager } from '../manager/persistentDataManager';
 import { SkinSelectItem } from './skinSelectItem';
@@ -125,7 +126,7 @@ export class SkinSelect extends Component {
     };
   }
 
-  public getEnemySkinData() {
+  public getEnemySkinData(): SnakeTypeAndSkin {
     let randomSkin: SkinDetail | undefined = undefined;
     let snakeType: SnakeType = SnakeType.NORMAL;
 
@@ -138,7 +139,7 @@ export class SkinSelect extends Component {
       randomSkin = skins[Math.floor(Math.random() * 0.99 * skins.length)];
     }
 
-    const enumVal = Object.keys(SnakeType)
+    const enumVal = Object.keys(SnakeType);
     const typeRand = Math.floor(Math.random() * enumVal.length);
     const randomEnumKey = enumVal[typeRand];
     snakeType = SnakeType[randomEnumKey as SnakeType];

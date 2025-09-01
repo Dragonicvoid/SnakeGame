@@ -25,8 +25,6 @@ export class SnakeAssembler implements IAssembler {
   fillBuffers(com: SnakeRenderable, renderer: any) {
     const bodiesCount = com.snakesBody.length;
 
-    if (!bodiesCount) return;
-
     let verticesCount = bodiesCount * 4;
     let indicesCount = bodiesCount * 6;
 

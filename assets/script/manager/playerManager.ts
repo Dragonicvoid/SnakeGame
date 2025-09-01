@@ -1,4 +1,7 @@
-import { _decorator, clamp, Component, game, instantiate, Node, Prefab, Vec2, Vec3 } from 'cc';
+import {
+    _decorator, clamp, Collider2D, Component, game, instantiate, Node, Prefab, RigidBody2D, Vec2,
+    Vec3
+} from 'cc';
 
 import { GoToFood } from '../action/goToFood';
 import { GoToPlayerAction } from '../action/goToPlayer';
@@ -6,10 +9,10 @@ import { NormalAction } from '../action/normalAction';
 import { SnakeRenderable } from '../customRenderable2D/snakeRenderable';
 import { ARENA_DEFAULT_OBJECT_SIZE } from '../enum/arenaConfig';
 import { BOT_ACTION } from '../enum/botAction';
+import { PHYSICS_GROUP } from '../enum/physics';
 import { SNAKE_CONFIG } from '../enum/snakeConfig';
 import { SnakeType } from '../enum/snakeType';
 import { Coordinate } from '../interface/map';
-import { XY } from '../interface/other';
 import { SnakeBody, SnakeConfig, SnakeState } from '../interface/player';
 import { SkinSelect } from '../object/skinSelect';
 import { getStringCoordName } from '../util/aStar';
@@ -60,6 +63,21 @@ export class PlayerManager extends Component {
       const radius = ARENA_DEFAULT_OBJECT_SIZE.SNAKE;
 
       const bodyObj = instantiate(this.sBodyPref);
+      bodyObj.active = true;
+      let group = isBot
+        ? PHYSICS_GROUP.ENEMY_BODIES
+        : PHYSICS_GROUP.PLAYER_BODIES;
+      if (i === 0) {
+        group = isBot ? PHYSICS_GROUP.ENEMY : PHYSICS_GROUP.PLAYER;
+      }
+      const rigidbody = bodyObj.getComponentInChildren(RigidBody2D);
+      if (rigidbody?.isValid) {
+        rigidbody.group = group;
+      }
+      const collider = bodyObj.getComponentInChildren(Collider2D);
+      if (collider?.isValid) {
+        collider.group = group;
+      }
       bodyObj.setParent(this.collParent);
 
       let newPos = pos.clone();
@@ -110,22 +128,28 @@ export class PlayerManager extends Component {
       body: bodies,
       movementDir: moveDir,
       inputDirection: new Vec2(),
-      speed: 1,
+      speed: 5,
       coordName: "",
       inDirectionChange: false,
     };
+
+    const skinData = isBot
+      ? this.skinSelect?.getEnemySkinData()
+      : this.skinSelect?.getPlayerSkinData();
 
     const player: SnakeConfig = {
       id: isBot ? this.ENEMY_ID : this.PLAYER_ID,
       state: state,
       isBot: isBot,
       isAlive: true,
-      render: this.playerRender,
-      possibleActions: new Map([
-        [BOT_ACTION.NORMAL, new NormalAction()],
-        [BOT_ACTION.CHASE_PLAYER, new GoToPlayerAction()],
-        [BOT_ACTION.EAT, new GoToFood()],
-      ]),
+      render: isBot ? this.enemyRender : this.playerRender,
+      possibleActions: isBot
+        ? new Map([
+            [BOT_ACTION.NORMAL, new NormalAction()],
+            [BOT_ACTION.CHASE_PLAYER, new GoToPlayerAction()],
+            [BOT_ACTION.EAT, new GoToFood()],
+          ])
+        : undefined,
     };
 
     this.playerList.push(player);
@@ -133,14 +157,12 @@ export class PlayerManager extends Component {
     if (isBot) {
       if (!this.enemyRender?.isValid) return;
 
-      const skinData = this.skinSelect?.getEnemySkinData();
       this.enemyRender.snakeType = skinData?.type ?? SnakeType.NORMAL;
       this.enemyRender.skinData = skinData?.skin ?? null;
       this.enemyRender?.setSnakeBody(bodies);
     } else {
       if (!this.playerRender?.isValid) return;
 
-      const skinData = this.skinSelect?.getPlayerSkinData();
       this.playerRender.snakeType = skinData?.type ?? SnakeType.NORMAL;
       this.playerRender.skinData = skinData?.skin ?? null;
       this.playerRender?.setSnakeBody(bodies);
@@ -152,7 +174,18 @@ export class PlayerManager extends Component {
     });
   }
 
-  public resetPlayers() {}
+  public removeAllPlayers() {
+    this.playerList.forEach((player) => {
+      player.state.foodGrabber.obj?.destroy();
+      player.state.body.forEach((b) => {
+        b.obj?.destroy();
+      });
+    });
+
+    this.playerList = [];
+    this.enemyRender?.setSnakeBody([]);
+    this.playerRender?.setSnakeBody([]);
+  }
 
   public findNearestPlayerTowardPoint(
     currentPlayer: SnakeConfig,
@@ -373,7 +406,17 @@ export class PlayerManager extends Component {
     return this.getPlayerById(this.PLAYER_ID);
   }
 
+  public getEnemy() {
+    return this.getPlayerById(this.ENEMY_ID);
+  }
+
   public getPlayerById(id: string) {
     return this.playerList.find((item) => item.id === id);
+  }
+
+  public getPlayerByBody(node: Node) {
+    return this.playerList.find((item) =>
+      item.state.body.find((body) => body.obj === node)
+    );
   }
 }

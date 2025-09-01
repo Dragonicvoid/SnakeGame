@@ -1,10 +1,16 @@
-import { _decorator, Component, game, Node, Vec2, Vec3 } from 'cc';
+import {
+    _decorator, Collider2D, Component, Contact2DType, director, game, math, Node, PhysicsGroup,
+    PhysicsGroup2D, PhysicsSystem2D, RigidBody2D, Vec2, Vec3
+} from 'cc';
 
 import { BaseAction } from '../action/baseAction';
 import { BOT_CONFIG } from '../enum/botConfig';
-import { ASSET_LOAD_EVENT } from '../enum/event';
+import { DIFFICULTY } from '../enum/difficulty';
+import { GAME_EVENT } from '../enum/event';
+import { PHYSICS_GROUP } from '../enum/physics';
 import { PlannerFactor } from '../interface/ai';
 import { FoodConfig } from '../interface/food';
+import { GameOverData } from '../interface/gameOver';
 import { SnakeConfig } from '../interface/player';
 import { BotPlanner } from '../util/botPlanner';
 import { ArenaManager } from './ArenaManager';
@@ -38,18 +44,49 @@ export class GameManager extends Component {
 
   private botInterval: number = 0;
 
+  private gameStartTime = 0;
+
+  private diff: DIFFICULTY = DIFFICULTY.NORMAL;
+
+  private headCollideCb = (
+    selfCollider: Collider2D,
+    otherCollider: Collider2D
+  ) => {};
+
+  private gameOverCb = (data: GameOverData) => {};
+
+  private gameUpdateCb = () => {};
+
   public startGame() {
+    this.gameStartTime = game.totalTime;
     this.uiManager?.showStartUI(false);
+    this.createPlayer();
+    this.setCollisionEvent();
+    this.setGameEvent();
+
+    this.gameUpdateCb = () => {
+      const deltaTime = Math.min(1 / 60, game.deltaTime);
+      this.playerManager?.playerList.forEach((snake) => {
+        this.handleBotLogic(snake);
+        this.playerManager?.updateCoordinate(deltaTime);
+      });
+    };
+    this.schedule(this.gameUpdateCb);
+  }
+
+  private createPlayer() {
     const centerPos = this.arenaManager?.centerPos ?? new Vec2(0, 0);
 
-    const playerPos = this.arenaManager?.spawnPos.pop() ?? new Vec2(0, 0);
+    const rand = Math.random();
+    const playerPos =
+      this.arenaManager?.spawnPos[rand > 0.5 ? 0 : 1] ?? new Vec2(0, 0);
     const playerDir = new Vec2(1, 0);
     if (playerPos > centerPos) {
       playerDir.set(-1, 0);
     }
     this.playerManager?.createPlayer(playerPos, playerDir);
 
-    const enemyPos = this.arenaManager?.spawnPos.pop() ?? new Vec2(0, 0);
+    const enemyPos = this.arenaManager?.spawnPos[rand > 0.5 ? 1 : 0] ?? new Vec2(0, 0);
     const enemyDir = new Vec2(1, 0);
     if (enemyPos > centerPos) {
       enemyDir.set(-1, 0);
@@ -57,14 +94,102 @@ export class GameManager extends Component {
     this.playerManager?.createPlayer(enemyPos, enemyDir, true);
 
     this.foodManager?.startSpawningFood();
+  }
 
-    this.schedule(() => {
-      const deltaTime = Math.min(1/60, game.deltaTime);
-      this.playerManager?.playerList.forEach((snake) => {
-        this.handleBotLogic(snake);
-        this.playerManager?.updateCoordinate(deltaTime)
-      });
-    });
+  private stopGame() {
+    this.foodManager?.stopSpawningFood();
+    this.unschedule(this.gameUpdateCb);
+    this.stopCollisionEvent();
+  }
+
+  public goToMainMenu() {
+    this.foodManager?.removeAllFood();
+    this.playerManager?.removeAllPlayers();
+    this.uiManager?.showStartUI();
+    this.uiManager?.showEndUI(undefined, false);
+  }
+
+  private setCollisionEvent() {
+    this.headCollideCb = this.onHeadCollide.bind(this);
+    PhysicsSystem2D.instance.on(
+      Contact2DType.BEGIN_CONTACT,
+      this.headCollideCb
+    );
+  }
+
+  private setGameEvent() {
+    this.gameOverCb = this.onGameOver.bind(this);
+    PersistentDataManager.instance.eventTarget.once(
+      GAME_EVENT.GAME_OVER,
+      this.gameOverCb
+    );
+  }
+
+  private stopCollisionEvent() {
+    PhysicsSystem2D.instance.off(
+      Contact2DType.BEGIN_CONTACT,
+      this.headCollideCb
+    );
+  }
+
+  private onHeadCollide(selfCollider: Collider2D, otherCollider: Collider2D) {
+    const gameOverData: GameOverData = {
+      player: this.playerManager?.getMainPlayer(),
+      enemy: this.playerManager?.getEnemy(),
+      time: game.totalTime,
+      diff: this.diff,
+      isWon: false,
+    };
+
+    if (
+      (selfCollider.group === PHYSICS_GROUP.PLAYER &&
+        otherCollider.group === PHYSICS_GROUP.ENEMY) ||
+      (selfCollider.group === PHYSICS_GROUP.ENEMY &&
+        otherCollider.group === PHYSICS_GROUP.PLAYER)
+    ) {
+      PersistentDataManager.instance.eventTarget.emit(
+        GAME_EVENT.GAME_OVER,
+        gameOverData
+      );
+    }
+
+    if (
+      (selfCollider.group === PHYSICS_GROUP.PLAYER &&
+        otherCollider.group === PHYSICS_GROUP.OBSTACLE) ||
+      (selfCollider.group === PHYSICS_GROUP.OBSTACLE &&
+        otherCollider.group === PHYSICS_GROUP.PLAYER) ||
+      (selfCollider.group === PHYSICS_GROUP.ENEMY_BODIES &&
+        otherCollider.group === PHYSICS_GROUP.PLAYER) ||
+      (selfCollider.group === PHYSICS_GROUP.PLAYER &&
+        otherCollider.group === PHYSICS_GROUP.ENEMY_BODIES)
+    ) {
+      PersistentDataManager.instance.eventTarget.emit(
+        GAME_EVENT.GAME_OVER,
+        gameOverData
+      );
+    }
+
+    if (
+      (selfCollider.group === PHYSICS_GROUP.ENEMY &&
+        otherCollider.group === PHYSICS_GROUP.OBSTACLE) ||
+      (selfCollider.group === PHYSICS_GROUP.OBSTACLE &&
+        otherCollider.group === PHYSICS_GROUP.ENEMY) ||
+      (selfCollider.group === PHYSICS_GROUP.PLAYER_BODIES &&
+        otherCollider.group === PHYSICS_GROUP.ENEMY) ||
+      (selfCollider.group === PHYSICS_GROUP.ENEMY &&
+        otherCollider.group === PHYSICS_GROUP.PLAYER_BODIES)
+    ) {
+      gameOverData.isWon = true;
+      PersistentDataManager.instance.eventTarget.emit(
+        GAME_EVENT.GAME_OVER,
+        gameOverData
+      );
+    }
+  }
+
+  private onGameOver(data: GameOverData) {
+    this.stopGame();
+    this.uiManager?.showEndUI(data);
   }
 
   private handleBotLogic(snake: SnakeConfig, skipTurnRadius = false) {

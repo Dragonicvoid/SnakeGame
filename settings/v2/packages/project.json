@@ -4,27 +4,42 @@
     "collisionGroups": [
       {
         "index": 1,
-        "name": "Food"
+        "name": "FOOD"
       },
       {
         "index": 2,
-        "name": "Body"
+        "name": "SNAKE_PLAYER"
       },
       {
         "index": 3,
-        "name": "FoodSensor"
+        "name": "FOOD_GRABBER"
       },
       {
         "index": 4,
-        "name": "Obstacle"
+        "name": "OBSTACLE"
+      },
+      {
+        "index": 5,
+        "name": "SNAKE_ENEMY"
+      },
+      {
+        "index": 6,
+        "name": "PLAYER_BODIES"
+      },
+      {
+        "index": 7,
+        "name": "ENEMY_BODIES"
       }
     ],
     "collisionMatrix": {
-      "0": 1,
+      "0": 0,
       "1": 8,
-      "2": 20,
+      "2": 176,
       "3": 2,
-      "4": 4
+      "4": 36,
+      "5": 84,
+      "6": 32,
+      "7": 4
     }
   },
   "layer": [

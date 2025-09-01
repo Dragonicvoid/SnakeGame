@@ -5,3 +5,7 @@ export enum SKIN_SELECT_EVENT {
 export enum ASSET_LOAD_EVENT {
   INIT_DEF_MAT_COMPLETE = "INIT_DEF_MAT_COMP",
 }
+
+export enum GAME_EVENT {
+  GAME_OVER = "GAME_EVENT_OVER",
+}
