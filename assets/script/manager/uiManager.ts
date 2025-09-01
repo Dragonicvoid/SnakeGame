@@ -1,6 +1,6 @@
-import { _decorator, Component, Label, Node } from 'cc';
+import { _decorator, Component, Label, Node } from "cc";
 
-import { GameOverData } from '../interface/gameOver';
+import { GameOverData } from "../interface/gameOver";
 
 const { ccclass, property } = _decorator;
 

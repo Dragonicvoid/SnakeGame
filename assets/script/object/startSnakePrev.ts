@@ -1,8 +1,8 @@
-import { _decorator, Component, Node, tween, Tween, Vec2 } from 'cc';
+import { _decorator, Component, Node, tween, Tween, Vec2 } from "cc";
 
-import { SnakeRenderablePrev } from '../customRenderable2D/snakeRenderablePrev';
-import { ARENA_DEFAULT_OBJECT_SIZE } from '../enum/arenaConfig';
-import { sleep } from '../util/other';
+import { SnakeRenderablePrev } from "../customRenderable2D/snakeRenderablePrev";
+import { ARENA_DEFAULT_OBJECT_SIZE } from "../enum/arenaConfig";
+import { sleep } from "../util/other";
 
 const { ccclass, property } = _decorator;
 
@@ -125,14 +125,14 @@ export class StartSnakePrev extends Component {
 
             this.snakeShape[idx]?.position.set(
               sinVal * this.danceLength,
-              this.snakeShape[idx].position.y
+              this.snakeShape[idx].position.y,
             );
           },
           onComplete: () => {
             this.mult[idx] *= -1;
             this.animDance(obj, idx);
           },
-        }
+        },
       )
       .start();
   }

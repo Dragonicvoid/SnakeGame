@@ -1,9 +1,9 @@
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node } from "cc";
 
-import { ACTION_SCORE } from '../enum/actionScore';
-import { PlannerFactor } from '../interface/ai';
-import { SnakeActionData, SnakeConfig } from '../interface/player';
-import { BaseAction } from './baseAction';
+import { ACTION_SCORE } from "../enum/actionScore";
+import { PlannerFactor } from "../interface/ai";
+import { SnakeActionData, SnakeConfig } from "../interface/player";
+import { BaseAction } from "./baseAction";
 
 const { ccclass, property } = _decorator;
 
@@ -16,7 +16,7 @@ export class NormalAction extends BaseAction {
     const dodgeAngle = this.processBotMovementByFatalObs(player, detectedObs);
 
     if (dodgeAngle) {
-      this.updateDirection(dodgeAngle)
+      this.updateDirection(dodgeAngle);
     }
   }
 

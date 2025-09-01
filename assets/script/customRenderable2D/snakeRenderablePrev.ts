@@ -1,15 +1,30 @@
 import {
-    _decorator, Camera, CCInteger, EffectAsset, IAssembler, Material, profiler, RenderTexture,
-    resources, Sprite, SpriteFrame, sys, Texture2D, UIRenderer, UITransform, Vec2, Vec3
-} from 'cc';
+  _decorator,
+  Camera,
+  CCInteger,
+  EffectAsset,
+  IAssembler,
+  Material,
+  profiler,
+  RenderTexture,
+  resources,
+  Sprite,
+  SpriteFrame,
+  sys,
+  Texture2D,
+  UIRenderer,
+  UITransform,
+  Vec2,
+  Vec3,
+} from "cc";
 
-import { SnakeAssembler } from '../customAssembler/snakeAssembler';
-import { ASSET_LOAD_EVENT } from '../enum/event';
-import { SnakeType } from '../enum/snakeType';
-import { SnakeBody } from '../interface/player';
-import { SkinDetail } from '../interface/skinList';
-import { PersistentDataManager } from '../manager/persistentDataManager';
-import { getEffectFromSnakeType, modifyFragShader } from '../util/shaderModify';
+import { SnakeAssembler } from "../customAssembler/snakeAssembler";
+import { ASSET_LOAD_EVENT } from "../enum/event";
+import { SnakeType } from "../enum/snakeType";
+import { SnakeBody } from "../interface/player";
+import { SkinDetail } from "../interface/skinList";
+import { PersistentDataManager } from "../manager/persistentDataManager";
+import { getEffectFromSnakeType, modifyFragShader } from "../util/shaderModify";
 
 const { ccclass, property } = _decorator;
 
@@ -75,7 +90,7 @@ export class SnakeRenderablePrev extends UIRenderer {
       this.setSnakeSkin();
 
       PersistentDataManager.instance.eventTarget.emit(
-        ASSET_LOAD_EVENT.INIT_DEF_MAT_COMPLETE
+        ASSET_LOAD_EVENT.INIT_DEF_MAT_COMPLETE,
       );
     });
   }
@@ -89,7 +104,7 @@ export class SnakeRenderablePrev extends UIRenderer {
       this.customMaterial,
       this.skinData.effect_code,
       this.snakeType,
-      this.skinData.id.toString()
+      this.skinData.id.toString(),
     );
 
     this.customMaterial = newMat ?? null;
@@ -103,9 +118,9 @@ export class SnakeRenderablePrev extends UIRenderer {
           if (!this?.isValid || err) return;
           this.customMaterial?.setProperty(
             "mainTexture",
-            asset.getGFXTexture()
+            asset.getGFXTexture(),
           );
-        }
+        },
       );
     }
   }

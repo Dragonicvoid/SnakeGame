@@ -1,4 +1,4 @@
-import { Enum } from 'cc';
+import { Enum } from "cc";
 
 export enum PHYSICS_GROUP {
   DEFAULT = 1 << 0,

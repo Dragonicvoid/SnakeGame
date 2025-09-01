@@ -1,5 +1,5 @@
-import { DIFFICULTY } from '../enum/difficulty';
-import { SnakeConfig } from './player';
+import { DIFFICULTY } from "../enum/difficulty";
+import { SnakeConfig } from "./player";
 
 export interface GameOverData {
   player?: SnakeConfig;

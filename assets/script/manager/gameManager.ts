@@ -1,24 +1,36 @@
 import {
-    _decorator, Collider2D, Component, Contact2DType, director, game, math, Node, PhysicsGroup,
-    PhysicsGroup2D, PhysicsSystem2D, RigidBody2D, Vec2, Vec3
-} from 'cc';
+  _decorator,
+  Collider2D,
+  Component,
+  Contact2DType,
+  director,
+  game,
+  math,
+  Node,
+  PhysicsGroup,
+  PhysicsGroup2D,
+  PhysicsSystem2D,
+  RigidBody2D,
+  Vec2,
+  Vec3,
+} from "cc";
 
-import { BaseAction } from '../action/baseAction';
-import { BOT_CONFIG } from '../enum/botConfig';
-import { DIFFICULTY } from '../enum/difficulty';
-import { GAME_EVENT } from '../enum/event';
-import { PHYSICS_GROUP } from '../enum/physics';
-import { PlannerFactor } from '../interface/ai';
-import { FoodConfig } from '../interface/food';
-import { GameOverData } from '../interface/gameOver';
-import { SnakeConfig } from '../interface/player';
-import { BotPlanner } from '../util/botPlanner';
-import { ArenaManager } from './ArenaManager';
-import { FoodManager } from './foodManager';
-import { GridManager } from './gridManager';
-import { PersistentDataManager } from './persistentDataManager';
-import { PlayerManager } from './playerManager';
-import { UIManager } from './uiManager';
+import { BaseAction } from "../action/baseAction";
+import { BOT_CONFIG } from "../enum/botConfig";
+import { DIFFICULTY } from "../enum/difficulty";
+import { GAME_EVENT } from "../enum/event";
+import { PHYSICS_GROUP } from "../enum/physics";
+import { PlannerFactor } from "../interface/ai";
+import { FoodConfig } from "../interface/food";
+import { GameOverData } from "../interface/gameOver";
+import { SnakeConfig } from "../interface/player";
+import { BotPlanner } from "../util/botPlanner";
+import { ArenaManager } from "./ArenaManager";
+import { FoodManager } from "./foodManager";
+import { GridManager } from "./gridManager";
+import { PersistentDataManager } from "./persistentDataManager";
+import { PlayerManager } from "./playerManager";
+import { UIManager } from "./uiManager";
 
 const { ccclass, property } = _decorator;
 
@@ -50,7 +62,7 @@ export class GameManager extends Component {
 
   private headCollideCb = (
     selfCollider: Collider2D,
-    otherCollider: Collider2D
+    otherCollider: Collider2D,
   ) => {};
 
   private gameOverCb = (data: GameOverData) => {};
@@ -86,7 +98,8 @@ export class GameManager extends Component {
     }
     this.playerManager?.createPlayer(playerPos, playerDir);
 
-    const enemyPos = this.arenaManager?.spawnPos[rand > 0.5 ? 1 : 0] ?? new Vec2(0, 0);
+    const enemyPos =
+      this.arenaManager?.spawnPos[rand > 0.5 ? 1 : 0] ?? new Vec2(0, 0);
     const enemyDir = new Vec2(1, 0);
     if (enemyPos > centerPos) {
       enemyDir.set(-1, 0);
@@ -113,7 +126,7 @@ export class GameManager extends Component {
     this.headCollideCb = this.onHeadCollide.bind(this);
     PhysicsSystem2D.instance.on(
       Contact2DType.BEGIN_CONTACT,
-      this.headCollideCb
+      this.headCollideCb,
     );
   }
 
@@ -121,14 +134,14 @@ export class GameManager extends Component {
     this.gameOverCb = this.onGameOver.bind(this);
     PersistentDataManager.instance.eventTarget.once(
       GAME_EVENT.GAME_OVER,
-      this.gameOverCb
+      this.gameOverCb,
     );
   }
 
   private stopCollisionEvent() {
     PhysicsSystem2D.instance.off(
       Contact2DType.BEGIN_CONTACT,
-      this.headCollideCb
+      this.headCollideCb,
     );
   }
 
@@ -149,7 +162,7 @@ export class GameManager extends Component {
     ) {
       PersistentDataManager.instance.eventTarget.emit(
         GAME_EVENT.GAME_OVER,
-        gameOverData
+        gameOverData,
       );
     }
 
@@ -165,7 +178,7 @@ export class GameManager extends Component {
     ) {
       PersistentDataManager.instance.eventTarget.emit(
         GAME_EVENT.GAME_OVER,
-        gameOverData
+        gameOverData,
       );
     }
 
@@ -182,7 +195,7 @@ export class GameManager extends Component {
       gameOverData.isWon = true;
       PersistentDataManager.instance.eventTarget.emit(
         GAME_EVENT.GAME_OVER,
-        gameOverData
+        gameOverData,
       );
     }
   }
@@ -216,13 +229,13 @@ export class GameManager extends Component {
     //detect player and food
     detectedPlayer = this.playerManager.findNearestPlayerTowardPoint(
       snake,
-      BOT_CONFIG.TRIGGER_AREA_DST
+      BOT_CONFIG.TRIGGER_AREA_DST,
     );
 
     detectedWall =
       this.arenaManager.findNearestObstacleTowardPoint(
         snake,
-        BOT_CONFIG.TRIGGER_AREA_DST
+        BOT_CONFIG.TRIGGER_AREA_DST,
       ) ?? [];
 
     // need to updated to adjust botData
@@ -231,7 +244,7 @@ export class GameManager extends Component {
       detectedFood =
         this.arenaManager.getNearestDetectedFood(
           snake,
-          BOT_CONFIG.TRIGGER_AREA_DST
+          BOT_CONFIG.TRIGGER_AREA_DST,
         ) ?? undefined;
     }
 
@@ -244,7 +257,7 @@ export class GameManager extends Component {
 
     if (targetFood) {
       const targetExist = this.foodManager.foodList.find(
-        (item) => item.id === targetFood.food.id
+        (item) => item.id === targetFood.food.id,
       );
       const targetIsEaten = targetFood.food.state.eaten;
       const isExpired = Date.now() - targetFood.timeTargeted > 3000;

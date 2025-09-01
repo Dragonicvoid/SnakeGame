@@ -1,8 +1,16 @@
 import {
-    _decorator, Component, gfx, IAssembler, MeshRenderData, Node, UITransform, Vec2, Vec3
-} from 'cc';
+  _decorator,
+  Component,
+  gfx,
+  IAssembler,
+  MeshRenderData,
+  Node,
+  UITransform,
+  Vec2,
+  Vec3,
+} from "cc";
 
-import { SnakeRenderable } from '../customRenderable2D/snakeRenderable';
+import { SnakeRenderable } from "../customRenderable2D/snakeRenderable";
 
 const { ccclass, property } = _decorator;
 
@@ -55,7 +63,7 @@ export class SnakeAssembler implements IAssembler {
     const uiTrans = com.getComponent(UITransform);
     const halfUITrans: Vec2 = new Vec2(
       uiTrans ? uiTrans.width / 2 : 0,
-      uiTrans ? uiTrans.height / 2 : 0
+      uiTrans ? uiTrans.height / 2 : 0,
     );
 
     // fill vertices
