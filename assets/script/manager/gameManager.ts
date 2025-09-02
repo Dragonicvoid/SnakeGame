@@ -230,7 +230,6 @@ export class GameManager extends Component {
           this.playerManager?.getPlayerByFoodGrabber(selfNodeParent) ??
           this.playerManager?.getPlayerByFoodGrabber(otherNodeParent);
 
-        console.log(food?.id, snake?.id);
         if (snake && food && !food.state.eaten)
           this.foodManager?.processEatenFood(snake, food);
       }

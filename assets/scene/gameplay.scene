@@ -697,7 +697,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "PlayerRender",
+    "_name": "PlayerDisplay",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
@@ -806,7 +806,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "EnemyRender",
+    "_name": "EnemyDisplay",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
@@ -3614,6 +3614,12 @@
     },
     "enemyRender": {
       "__id__": 44
+    },
+    "playerDisplay": {
+      "__id__": 19
+    },
+    "enemyDisplay": {
+      "__id__": 22
     },
     "skinSelect": {
       "__id__": 123

@@ -18,6 +18,8 @@ CCEffect %{
       properties:
         alphaThreshold: { value: 0.5 }
         highlightCol: { value: [0.0, 0.0, 0.0, 1.0], editor: { type: color } }
+        eatColor: { value: [0.0, 0.0, 0.0, 1.0], editor: { type: color } }
+        eatRatio: { value: 0 }
         width: { value: 700 }
         height: { value: 700 }
         strength: { value: 0.9 }
@@ -72,6 +74,11 @@ CCProgram display-fs %{
     float strength;
   };
 
+  uniform Const2 {
+    vec4 eatColor;
+    float eatRatio;
+  };
+
   #if USE_TEXTURE
     in vec2 uv0;
     #pragma builtin(local)
@@ -98,8 +105,10 @@ CCProgram display-fs %{
       }
 
       float blur = (sumAlpha / blurPixels) * (1.0 + strength);
+      vec4 blend = mix(vec4(0., 0., 0., 1.), eatColor, eatRatio);
       vec4 tex = CCSampleWithAlphaSeparated(cc_spriteTexture, uv0);
-      o = mix(vec4(highlightCol.rgb, clamp(blur, 0., 1.0)), tex, tex.a);
+      vec4 screen = vec4(1.) - (vec4(1.) - tex) * (vec4(1.) - blend);
+      o = mix(vec4(highlightCol.rgb, clamp(blur, 0., 1.0)), screen, tex.a);
 
       #if IS_GRAY
         float gray  = 0.2126 * o.r + 0.7152 * o.g + 0.0722 * o.b;

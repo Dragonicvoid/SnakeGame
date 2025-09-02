@@ -1,6 +1,6 @@
 import {
-    _decorator, clamp, Collider2D, Component, game, instantiate, Node, Prefab, RigidBody2D, Vec2,
-    Vec3
+    _decorator, clamp, Collider2D, Component, game, instantiate, Material, Node, Prefab,
+    RigidBody2D, Sprite, tween, Tween, Vec2, Vec3
 } from 'cc';
 
 import { GoToFood } from '../action/goToFood';
@@ -33,6 +33,12 @@ export class PlayerManager extends Component {
   @property(SnakeRenderable)
   private enemyRender: SnakeRenderable | null = null;
 
+  @property(Sprite)
+  private playerDisplay: Sprite | null = null;
+
+  @property(Sprite)
+  private enemyDisplay: Sprite | null = null;
+
   @property(SkinSelect)
   private skinSelect: SkinSelect | null = null;
 
@@ -54,6 +60,8 @@ export class PlayerManager extends Component {
   private PLAYER_ID = "MAIN_PLAYER";
 
   private ENEMY_ID = "ENEMY";
+
+  private eatAnim: Map<string, Tween | null> = new Map();
 
   onLoad() {
     this.touchMoveCb = this.onTouchMove.bind(this);
@@ -216,6 +224,7 @@ export class PlayerManager extends Component {
     if (!this.sBodyPref?.isValid) return undefined;
 
     const bodyObj = instantiate(this.sBodyPref);
+    bodyObj.setPosition(new Vec3(pos.x, pos.y));
     bodyObj.active = true;
     let group = isBot
       ? PHYSICS_GROUP.ENEMY_BODIES
@@ -436,6 +445,39 @@ export class PlayerManager extends Component {
     if (!newBody) return;
 
     snake.state.body.push(newBody);
+
+    let anim = this.eatAnim.get(snake.id);
+    const obj = { val: 0 };
+    const tw = tween(obj).to(
+      0.2,
+      { val: 1 },
+      {
+        onUpdate: () => {
+          let mat: Material | undefined = undefined;
+          if (snake.isBot) {
+            mat = this.enemyDisplay?.customMaterial ?? undefined;
+          } else {
+            mat = this.playerDisplay?.customMaterial ?? undefined;
+          }
+          const ratio = 1 - Math.abs(2 * obj.val - 1);
+          mat?.setProperty("eatRatio", ratio);
+        },
+        onComplete: () => {
+          let mat: Material | undefined = undefined;
+          if (snake.isBot) {
+            mat = this.enemyDisplay?.customMaterial ?? undefined;
+          } else {
+            mat = this.playerDisplay?.customMaterial ?? undefined;
+          }
+          mat?.setProperty("eatRatio", 0);
+        },
+      }
+    );
+
+    if (anim) anim.stop();
+
+    anim = tw;
+    anim.start();
   }
 
   private getFoodGrabberPosition(head: SnakeBody) {
