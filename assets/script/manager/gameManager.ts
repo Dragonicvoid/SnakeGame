@@ -12,6 +12,7 @@ import { PlannerFactor } from '../interface/ai';
 import { FoodConfig } from '../interface/food';
 import { GameOverData } from '../interface/gameOver';
 import { SnakeConfig } from '../interface/player';
+import { ArenaInput } from '../object/arenaInput';
 import { BotPlanner } from '../util/botPlanner';
 import { ArenaManager } from './ArenaManager';
 import { FoodManager } from './foodManager';
@@ -39,6 +40,9 @@ export class GameManager extends Component {
   @property(UIManager)
   private uiManager: UIManager | null = null;
 
+  @property(ArenaInput)
+  private inputField: ArenaInput | null = null;
+
   @property(BotPlanner)
   private planner: BotPlanner | null = null;
 
@@ -50,7 +54,7 @@ export class GameManager extends Component {
 
   private headCollideCb = (
     selfCollider: Collider2D,
-    otherCollider: Collider2D,
+    otherCollider: Collider2D
   ) => {};
 
   private gameOverCb = (data: GameOverData) => {};
@@ -60,6 +64,8 @@ export class GameManager extends Component {
   public startGame() {
     this.gameStartTime = game.totalTime;
     this.uiManager?.showStartUI(false);
+    this.inputField?.startInputListener();
+
     this.createPlayer();
     this.setCollisionEvent();
     this.setGameEvent();
@@ -99,6 +105,7 @@ export class GameManager extends Component {
 
   private stopGame() {
     this.foodManager?.stopSpawningFood();
+    this.inputField?.stopInputListener();
     this.unschedule(this.gameUpdateCb);
     this.stopCollisionEvent();
   }
@@ -115,7 +122,7 @@ export class GameManager extends Component {
     this.headCollideCb = this.onHeadCollide.bind(this);
     PhysicsSystem2D.instance.on(
       Contact2DType.BEGIN_CONTACT,
-      this.headCollideCb,
+      this.headCollideCb
     );
   }
 
@@ -123,14 +130,14 @@ export class GameManager extends Component {
     this.gameOverCb = this.onGameOver.bind(this);
     PersistentDataManager.instance.eventTarget.once(
       GAME_EVENT.GAME_OVER,
-      this.gameOverCb,
+      this.gameOverCb
     );
   }
 
   private stopCollisionEvent() {
     PhysicsSystem2D.instance.off(
       Contact2DType.BEGIN_CONTACT,
-      this.headCollideCb,
+      this.headCollideCb
     );
   }
 
@@ -151,7 +158,7 @@ export class GameManager extends Component {
     ) {
       PersistentDataManager.instance.eventTarget.emit(
         GAME_EVENT.GAME_OVER,
-        gameOverData,
+        gameOverData
       );
     }
 
@@ -167,7 +174,7 @@ export class GameManager extends Component {
     ) {
       PersistentDataManager.instance.eventTarget.emit(
         GAME_EVENT.GAME_OVER,
-        gameOverData,
+        gameOverData
       );
     }
 
@@ -184,7 +191,7 @@ export class GameManager extends Component {
       gameOverData.isWon = true;
       PersistentDataManager.instance.eventTarget.emit(
         GAME_EVENT.GAME_OVER,
-        gameOverData,
+        gameOverData
       );
     }
   }
@@ -216,13 +223,13 @@ export class GameManager extends Component {
     //detect player and food
     detectedPlayer = this.playerManager.findNearestPlayerTowardPoint(
       snake,
-      BOT_CONFIG.TRIGGER_AREA_DST,
+      BOT_CONFIG.TRIGGER_AREA_DST
     );
 
     detectedWall =
       this.arenaManager.findNearestObstacleTowardPoint(
         snake,
-        BOT_CONFIG.TRIGGER_AREA_DST,
+        BOT_CONFIG.TRIGGER_AREA_DST
       ) ?? [];
 
     // need to updated to adjust botData
@@ -231,7 +238,7 @@ export class GameManager extends Component {
       detectedFood =
         this.arenaManager.getNearestDetectedFood(
           snake,
-          BOT_CONFIG.TRIGGER_AREA_DST,
+          BOT_CONFIG.TRIGGER_AREA_DST
         ) ?? undefined;
     }
 
@@ -244,7 +251,7 @@ export class GameManager extends Component {
 
     if (targetFood) {
       const targetExist = this.foodManager.foodList.find(
-        (item) => item.id === targetFood.food.id,
+        (item) => item.id === targetFood.food.id
       );
       const targetIsEaten = targetFood.food.state.eaten;
       const isExpired = Date.now() - targetFood.timeTargeted > 3000;

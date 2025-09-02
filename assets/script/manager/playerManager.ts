@@ -9,6 +9,7 @@ import { NormalAction } from '../action/normalAction';
 import { SnakeRenderable } from '../customRenderable2D/snakeRenderable';
 import { ARENA_DEFAULT_OBJECT_SIZE } from '../enum/arenaConfig';
 import { BOT_ACTION } from '../enum/botAction';
+import { INPUT_EVENT } from '../enum/event';
 import { PHYSICS_GROUP } from '../enum/physics';
 import { SNAKE_CONFIG } from '../enum/snakeConfig';
 import { SnakeType } from '../enum/snakeType';
@@ -18,6 +19,7 @@ import { SkinSelect } from '../object/skinSelect';
 import { normalize } from '../util/algorithm';
 import { getStringCoordName } from '../util/aStar';
 import { ArenaManager } from './ArenaManager';
+import { PersistentDataManager } from './persistentDataManager';
 
 const { ccclass, property } = _decorator;
 
@@ -44,11 +46,21 @@ export class PlayerManager extends Component {
   @property(Node)
   private sFoodGrabPref: Node | null = null;
 
+  private touchMoveCb = (delta: Vec2) => {};
+
   public playerList: SnakeConfig[] = [];
 
   private PLAYER_ID = "MAIN_PLAYER";
 
   private ENEMY_ID = "ENEMY";
+
+  onLoad() {
+    this.touchMoveCb = this.onTouchMove.bind(this);
+    PersistentDataManager.instance.eventTarget.on(
+      INPUT_EVENT.MOVE_TOUCH,
+      this.touchMoveCb
+    );
+  }
 
   public createPlayer(pos: Vec2, moveDir: Vec2, isBot = false) {
     if (!this.sBodyPref?.isValid || !this.sFoodGrabPref?.isValid) return;
@@ -273,20 +285,17 @@ export class PlayerManager extends Component {
 
     if (option) {
       if (option.direction) {
-        const normDevider = Math.max(
-          Math.abs(option.direction.x),
-          Math.abs(option.direction.y)
-        );
+        const normalized = new Vec2(0, 0);
+        Vec2.normalize(normalized, option.direction);
 
-        movDir.x = (option.direction.x / normDevider) * pState.speed;
-        movDir.y = (option.direction.y / normDevider) * pState.speed;
+        movDir.x = normalized.x * pState.speed;
+        movDir.y = normalized.y * pState.speed;
       }
     }
     if (!pState.inputDirection) pState.inputDirection = new Vec2();
     pState.inputDirection.x = movDir.x;
     pState.inputDirection.y = movDir.y;
 
-    console.log(movDir);
     const velocity = new Vec2(movDir.x, movDir.y);
 
     if (option?.initialMovement) {
@@ -401,6 +410,12 @@ export class PlayerManager extends Component {
         headY = tempheadY;
       }
     }
+  }
+
+  private onTouchMove(delta: Vec2) {
+    this.handleMovement(this.PLAYER_ID, {
+      direction: delta,
+    });
   }
 
   private getFoodGrabberPosition(head: SnakeBody) {
