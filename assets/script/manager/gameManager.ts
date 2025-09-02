@@ -57,6 +57,11 @@ export class GameManager extends Component {
     otherCollider: Collider2D
   ) => {};
 
+  private foodCollideCb = (
+    selfCollider: Collider2D,
+    otherCollider: Collider2D
+  ) => {};
+
   private gameOverCb = (data: GameOverData) => {};
 
   private gameUpdateCb = () => {};
@@ -120,9 +125,15 @@ export class GameManager extends Component {
 
   private setCollisionEvent() {
     this.headCollideCb = this.onHeadCollide.bind(this);
+    this.foodCollideCb = this.onFoodCollide.bind(this);
     PhysicsSystem2D.instance.on(
       Contact2DType.BEGIN_CONTACT,
-      this.headCollideCb
+      this.headCollideCb,
+    );
+
+    PhysicsSystem2D.instance.on(
+      Contact2DType.BEGIN_CONTACT,
+      this.foodCollideCb,
     );
   }
 
@@ -138,6 +149,11 @@ export class GameManager extends Component {
     PhysicsSystem2D.instance.off(
       Contact2DType.BEGIN_CONTACT,
       this.headCollideCb
+    );
+
+    PhysicsSystem2D.instance.off(
+      Contact2DType.BEGIN_CONTACT,
+      this.foodCollideCb
     );
   }
 
@@ -193,6 +209,31 @@ export class GameManager extends Component {
         GAME_EVENT.GAME_OVER,
         gameOverData
       );
+    }
+  }
+
+  private onFoodCollide(selfCollider: Collider2D, otherCollider: Collider2D) {
+    if (
+      (selfCollider.group === PHYSICS_GROUP.FOOD_GRABBER &&
+        otherCollider.group === PHYSICS_GROUP.FOOD) ||
+      (selfCollider.group === PHYSICS_GROUP.FOOD &&
+        otherCollider.group === PHYSICS_GROUP.FOOD_GRABBER)
+    ) {
+      const selfNodeParent = selfCollider.node.parent;
+      const otherNodeParent = otherCollider.node.parent;
+
+      if (selfNodeParent && otherNodeParent) {
+        const food =
+          this.foodManager?.getFoodByObj(selfNodeParent) ??
+          this.foodManager?.getFoodByObj(otherNodeParent);
+        const snake =
+          this.playerManager?.getPlayerByFoodGrabber(selfNodeParent) ??
+          this.playerManager?.getPlayerByFoodGrabber(otherNodeParent);
+
+        console.log(food?.id, snake?.id);
+        if (snake && food && !food.state.eaten)
+          this.foodManager?.processEatenFood(snake, food);
+      }
     }
   }
 

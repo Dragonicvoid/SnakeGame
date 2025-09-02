@@ -5277,7 +5277,7 @@
     "_string": "Play",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
-    "_actualFontSize": 49.833333333333336,
+    "_actualFontSize": 40,
     "_fontSize": 40,
     "_fontFamily": "Arial",
     "_lineHeight": 60,
@@ -5570,7 +5570,7 @@
     "__prefab": null,
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 222.30924370296822,
+      "width": 222.32421875,
       "height": 75.6
     },
     "_anchorPoint": {
@@ -5603,7 +5603,7 @@
     "_string": "Select Skin :",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
-    "_actualFontSize": 49.833333333333336,
+    "_actualFontSize": 40,
     "_fontSize": 40,
     "_fontFamily": "Arial",
     "_lineHeight": 60,
@@ -6058,8 +6058,11 @@
     "obsManager": {
       "__id__": 117
     },
+    "gridManager": {
+      "__id__": 5
+    },
     "maxFoodInstance": 5,
-    "foodSpawnInterval": 3,
+    "foodSpawnInterval": 2,
     "_id": "7eSDM1Q7dHkr/zwSnnbCSa"
   },
   {

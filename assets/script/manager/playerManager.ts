@@ -9,14 +9,13 @@ import { NormalAction } from '../action/normalAction';
 import { SnakeRenderable } from '../customRenderable2D/snakeRenderable';
 import { ARENA_DEFAULT_OBJECT_SIZE } from '../enum/arenaConfig';
 import { BOT_ACTION } from '../enum/botAction';
-import { INPUT_EVENT } from '../enum/event';
+import { GAME_EVENT, INPUT_EVENT } from '../enum/event';
 import { PHYSICS_GROUP } from '../enum/physics';
 import { SNAKE_CONFIG } from '../enum/snakeConfig';
 import { SnakeType } from '../enum/snakeType';
 import { Coordinate } from '../interface/map';
 import { SnakeBody, SnakeConfig, SnakeState } from '../interface/player';
 import { SkinSelect } from '../object/skinSelect';
-import { normalize } from '../util/algorithm';
 import { getStringCoordName } from '../util/aStar';
 import { ArenaManager } from './ArenaManager';
 import { PersistentDataManager } from './persistentDataManager';
@@ -48,6 +47,8 @@ export class PlayerManager extends Component {
 
   private touchMoveCb = (delta: Vec2) => {};
 
+  private increaseSizeCb = (player: SnakeConfig) => {};
+
   public playerList: SnakeConfig[] = [];
 
   private PLAYER_ID = "MAIN_PLAYER";
@@ -56,9 +57,15 @@ export class PlayerManager extends Component {
 
   onLoad() {
     this.touchMoveCb = this.onTouchMove.bind(this);
+    this.increaseSizeCb = this.onSizeIncrease.bind(this);
     PersistentDataManager.instance.eventTarget.on(
       INPUT_EVENT.MOVE_TOUCH,
       this.touchMoveCb
+    );
+
+    PersistentDataManager.instance.eventTarget.on(
+      GAME_EVENT.PLAYER_INCREASE_SIZE,
+      this.increaseSizeCb
     );
   }
 
@@ -72,59 +79,18 @@ export class PlayerManager extends Component {
     let foodPos = { x: pos.x, y: pos.y };
 
     for (let i = 0; i < totalBodies; i++) {
-      const angle = (moveDir.x < 0 ? 0 : 180) * (Math.PI / 180);
-      const radius = ARENA_DEFAULT_OBJECT_SIZE.SNAKE;
+      const newBody = this.createBody(isBot, i === 0, pos);
 
-      const bodyObj = instantiate(this.sBodyPref);
-      bodyObj.active = true;
-      let group = isBot
-        ? PHYSICS_GROUP.ENEMY_BODIES
-        : PHYSICS_GROUP.PLAYER_BODIES;
-      if (i === 0) {
-        group = isBot ? PHYSICS_GROUP.ENEMY : PHYSICS_GROUP.PLAYER;
-      }
-      const rigidbody = bodyObj.getComponentInChildren(RigidBody2D);
-      if (rigidbody?.isValid) {
-        rigidbody.group = group;
-      }
-      const collider = bodyObj.getComponentInChildren(Collider2D);
-      if (collider?.isValid) {
-        collider.group = group;
-      }
-      bodyObj.setParent(this.collParent);
-
-      let newPos = pos.clone();
+      if (!newBody) continue;
 
       if (!prevBodies) {
-        const newBody = {
-          position: newPos,
-          radius: radius,
-          movementQueue: [],
-          velocity: new Vec2(0, 0),
-          obj: bodyObj,
-        };
         bodies.push(newBody);
-        bodyObj.setPosition(newBody.position.x, newBody.position.y);
+        newBody.obj?.setPosition(newBody.position.x, newBody.position.y);
         foodPos = this.getFoodGrabberPosition(newBody);
-
         prevBodies = newBody;
       } else {
-        const prevPos: Vec2 = prevBodies.position;
-        const posVec = new Vec3(radius, 0);
-        const rotMat = [
-          [Math.cos(angle), -Math.sin(angle)],
-          [Math.sin(angle), Math.cos(angle)],
-        ];
-        newPos = new Vec2(prevPos.x, prevPos.y);
-        const newBody = {
-          position: newPos,
-          radius: radius,
-          movementQueue: [],
-          velocity: new Vec2(0, 0),
-          obj: bodyObj,
-        };
         bodies.push(newBody);
-        bodyObj.setPosition(newBody.position.x, newBody.position.y);
+        newBody.obj?.setPosition(newBody.position.x, newBody.position.y);
         prevBodies = newBody;
       }
     }
@@ -134,7 +100,7 @@ export class PlayerManager extends Component {
 
     const state: SnakeState = {
       foodGrabber: {
-        position: new Vec2(),
+        position: new Vec2(foodPos.x, foodPos.y),
         radius: ARENA_DEFAULT_OBJECT_SIZE.FOOD_GRABBER,
         obj: foodGrabObj,
       },
@@ -194,6 +160,7 @@ export class PlayerManager extends Component {
       player.state.body.forEach((b) => {
         b.obj?.destroy();
       });
+      player.state.body = [];
     });
 
     this.playerList = [];
@@ -239,6 +206,44 @@ export class PlayerManager extends Component {
       }
     });
     return detectedObstacleAngles;
+  }
+
+  private createBody(
+    isBot: boolean,
+    isHead: boolean,
+    pos: Vec2
+  ): SnakeBody | undefined {
+    if (!this.sBodyPref?.isValid) return undefined;
+
+    const bodyObj = instantiate(this.sBodyPref);
+    bodyObj.active = true;
+    let group = isBot
+      ? PHYSICS_GROUP.ENEMY_BODIES
+      : PHYSICS_GROUP.PLAYER_BODIES;
+    if (isHead) {
+      group = isBot ? PHYSICS_GROUP.ENEMY : PHYSICS_GROUP.PLAYER;
+    }
+    const rigidbody = bodyObj.getComponentInChildren(RigidBody2D);
+    if (rigidbody?.isValid) {
+      rigidbody.group = group;
+    }
+    const collider = bodyObj.getComponentInChildren(Collider2D);
+    if (collider?.isValid) {
+      collider.group = group;
+    }
+    bodyObj.setParent(this.collParent);
+
+    let newPos = pos.clone();
+
+    const newBody = {
+      position: newPos,
+      radius: ARENA_DEFAULT_OBJECT_SIZE.SNAKE,
+      movementQueue: [],
+      velocity: new Vec2(0, 0),
+      obj: bodyObj,
+    };
+
+    return newBody;
   }
 
   private isCircleOverlap(
@@ -418,9 +423,26 @@ export class PlayerManager extends Component {
     });
   }
 
+  private onSizeIncrease(snake: SnakeConfig) {
+    const length = snake.state.body.length;
+    const lastBody = snake.state.body[length - 1];
+    const pos = lastBody.obj?.position;
+    const newBody = this.createBody(
+      snake.isBot,
+      false,
+      new Vec2(pos?.x, pos?.y)
+    );
+
+    if (!newBody) return;
+
+    snake.state.body.push(newBody);
+  }
+
   private getFoodGrabberPosition(head: SnakeBody) {
-    const x = head.velocity.x * head.radius + head.position.x;
-    const y = head.velocity.y * head.radius + head.position.y;
+    const norm = new Vec2(0, 0);
+    Vec2.normalize(norm, head.velocity);
+    const x = norm.x * head.radius + head.position.x;
+    const y = norm.y * head.radius + head.position.y;
 
     return { x: x, y: y };
   }
@@ -441,5 +463,9 @@ export class PlayerManager extends Component {
     return this.playerList.find((item) =>
       item.state.body.find((body) => body.obj === node)
     );
+  }
+
+  public getPlayerByFoodGrabber(node: Node) {
+    return this.playerList.find((item) => item.state.foodGrabber.obj === node);
   }
 }
