@@ -67,7 +67,6 @@ export class GameManager extends Component {
   private gameUpdateCb = () => {};
 
   public startGame() {
-    PersistentDataManager.instance.selectedMap = Math.random() < 0.5 ? 0 : 1;
     this.arenaManager?.initializedMap();
     this.gameStartTime = game.totalTime;
     this.uiManager?.showStartUI(false);
@@ -297,9 +296,7 @@ export class GameManager extends Component {
       );
       const targetIsEaten = targetFood.food.state.eaten;
       const isExpired = Date.now() - targetFood.timeTargeted > 3000;
-      // player.serverPlayerData.botData = {
-      //   targetFood: undefined,
-      // };
+      snake.state.targetFood = targetFood;
       if (!targetExist || targetIsEaten || isExpired) {
         snake.state.targetFood = undefined;
       }

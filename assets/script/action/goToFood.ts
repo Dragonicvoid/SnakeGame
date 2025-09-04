@@ -1,9 +1,9 @@
-import { _decorator, Component, Node } from "cc";
+import { _decorator, Component, Node } from 'cc';
 
-import { ACTION_SCORE } from "../enum/actionScore";
-import { PlannerFactor } from "../interface/ai";
-import { SnakeActionData, SnakeConfig } from "../interface/player";
-import { BaseAction } from "./baseAction";
+import { ACTION_SCORE } from '../enum/actionScore';
+import { PlannerFactor } from '../interface/ai';
+import { SnakeActionData, SnakeConfig } from '../interface/player';
+import { BaseAction } from './baseAction';
 
 const { ccclass, property } = _decorator;
 
@@ -16,6 +16,9 @@ export class GoToFood extends BaseAction {
   public onChange() {}
 
   public run(player: SnakeConfig, data: SnakeActionData) {
+    this.player = player;
+    this.currData = data;
+
     const foodTarget = data.detectedFood;
 
     if (!foodTarget) return;
@@ -34,6 +37,7 @@ export class GoToFood extends BaseAction {
     );
     const bodyFactScore = bodyFactor * ACTION_SCORE.SMALL_BODY;
 
-    return bodyFactScore + foodScore;
+    this.score = bodyFactScore + foodScore;
+    return this.score;
   }
 }

@@ -279,7 +279,7 @@ export class PlayerManager extends Component {
   ) {
     const deltaX = x2 - x1;
     const deltaY = y2 - y1;
-    return (Math.pow(deltaX, 2) + Math.pow(deltaY, 2)) <= Math.pow(r1 + r2, 2);
+    return Math.pow(deltaX, 2) + Math.pow(deltaY, 2) <= Math.pow(r1 + r2, 2);
   }
 
   public getPlayerDirection(id: string) {
@@ -368,27 +368,25 @@ export class PlayerManager extends Component {
 
         if (bodyState) {
           if (ii !== 0) {
-            let dist = Vec2.distance(
-              bodyState.position,
-              new Vec2(headX, headY)
-            );
+            let totalDist = 0;
+            const lastPos = new Vec2(headX, headY);
+            for (let b = bodyState.movementQueue.length - 1; b >= 0; b--) {
+              const dist = Vec2.distance(lastPos, bodyState.movementQueue[b]);
+              totalDist += dist;
 
-            if (dist > SNAKE) {
-              let queueState = { x: headX, y: headY };
-              do {
-                queueState = bodyState.movementQueue.shift() ?? {
-                  x: headX,
-                  y: headY,
-                };
-                dist = Vec2.distance(
-                  new Vec2(headX, headY),
-                  new Vec2(queueState.x, queueState.y)
+              if (totalDist > SNAKE * 0.75) {
+                bodyState.obj?.setPosition(
+                  bodyState.movementQueue[b]?.x ?? 0,
+                  bodyState.movementQueue[b]?.y ?? 0
                 );
-              } while (dist > SNAKE);
-
-              bodyState.obj?.setPosition(
-                queueState?.x ?? 0,
-                queueState?.y ?? 0
+                bodyState.movementQueue = bodyState.movementQueue.splice(
+                  b + 1
+                );
+                break;
+              }
+              lastPos.set(
+                bodyState.movementQueue[b]?.x ?? lastPos.x,
+                bodyState.movementQueue[b]?.y ?? lastPos.y
               );
             }
 

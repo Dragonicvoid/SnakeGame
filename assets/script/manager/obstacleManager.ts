@@ -154,11 +154,15 @@ export class ObstacleManager extends Component {
   }
 
   public isPosSafeForSpawn(coord: Coordinate) {
-    return (
-      (this.obstacleMap[coord.y][coord.x]?.type &
-        (ARENA_OBJECT_TYPE.SPIKE | ARENA_OBJECT_TYPE.WALL)) ===
-      0
-    );
+    let safe = 0;
+    for (let y = -1; y <= 1; y++) {
+      for (let x = -1; x <= 1; x++) {
+        safe |=
+          this.obstacleMap[coord.y + y]?.[coord.x + x]?.type &
+          (ARENA_OBJECT_TYPE.SPIKE | ARENA_OBJECT_TYPE.WALL);
+      }
+    }
+    return safe === 0;
   }
 
   onDestroy(): void {
