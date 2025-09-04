@@ -27,7 +27,7 @@ export class UIManager extends Component {
 
   private touchStartCb = (pos: Vec2) => {};
 
-  private touchMoveCb = (delta: Vec2) => {};
+  private touchMoveCb = (pos: Vec2) => {};
 
   private touchEndCb = () => {};
 
@@ -74,8 +74,8 @@ export class UIManager extends Component {
     this.showMovUI(true, pos);
   }
 
-  private onTouchMove(delta: Vec2) {
-    this.setMovUIFrontDelta(delta);
+  private onTouchMove(pos: Vec2) {
+    this.setMovUIFrontDelta(pos);
   }
 
   private onTouchEnd() {
@@ -88,7 +88,7 @@ export class UIManager extends Component {
     this.movUI.active = show;
 
     if (!show) {
-      this.setMovUIFrontDelta(new Vec2(0, 0));
+      this.movUIFront?.setPosition(0, 0);
     }
 
     if (!pos || !show) return;
@@ -96,20 +96,34 @@ export class UIManager extends Component {
     this.movUI.setWorldPosition(new Vec3(pos.x, pos.y, this.movUI.position.z));
   }
 
-  private setMovUIFrontDelta(delta: Vec2) {
+  private setMovUIFrontDelta(pos: Vec2) {
     if (!this.movUIFront?.isValid) return;
 
-    const normVec = new Vec2(0, 0);
-    const dist = Vec2.distance(normVec, delta);
-
+    const currPos = new Vec2(
+      this.movUI?.worldPosition.x,
+      this.movUI?.worldPosition.y
+    );
+    const dist = Vec2.distance(currPos, pos);
+    const dir = new Vec2(pos.x - currPos.x, pos.y - currPos.y);
     if (dist > this.movMaxLength) {
-      Vec2.normalize(normVec, delta);
+      const normVec = new Vec2(0, 0);
+      Vec2.normalize(normVec, dir);
       normVec.multiplyScalar(this.movMaxLength);
+      this.movUIFront.setPosition(normVec.x, normVec.y);
+      this.movUI?.setWorldPosition(
+        pos.x - normVec.x,
+        pos.y - normVec.y,
+        this.movUI.position.z
+      );
+      dir.set(normVec.x, normVec.y);
     } else {
-      normVec.set(delta);
+      this.movUIFront.setPosition(dir.x, dir.y);
     }
 
-    this.movUIFront.setPosition(normVec.x, normVec.y);
+    PersistentDataManager.instance.eventTarget.emit(
+      INPUT_EVENT.MOVE_TOUCH_CALCULATED,
+      dir
+    );
   }
 
   onDestroy() {

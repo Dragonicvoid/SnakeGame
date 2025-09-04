@@ -13,8 +13,6 @@ export class ArenaInput extends Component {
 
   private touchEndCb = (event: EventTouch) => {};
 
-  private startPos: Vec3 = new Vec3();
-
   public startInputListener() {
     this.touchStartCb = this.onTouchStart.bind(this);
     this.touchMoveCb = this.onTouchMove.bind(this);
@@ -37,24 +35,18 @@ export class ArenaInput extends Component {
 
     if (!uiLoc) return;
 
-    this.startPos.set(uiLoc.x, uiLoc.y);
-
     PersistentDataManager.instance.eventTarget.emit(
       INPUT_EVENT.START_TOUCH,
-      this.startPos
+      uiLoc
     );
   }
 
   private onTouchMove(event: EventTouch) {
     const uiLoc = event.getLocation();
-    const delta = new Vec2(
-      uiLoc.x - this.startPos.x,
-      uiLoc.y - this.startPos.y
-    );
 
     PersistentDataManager.instance.eventTarget.emit(
       INPUT_EVENT.MOVE_TOUCH,
-      delta
+      uiLoc
     );
   }
 

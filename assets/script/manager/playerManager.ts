@@ -71,7 +71,7 @@ export class PlayerManager extends Component {
     this.touchMoveCb = this.onTouchMove.bind(this);
     this.increaseSizeCb = this.onSizeIncrease.bind(this);
     PersistentDataManager.instance.eventTarget.on(
-      INPUT_EVENT.MOVE_TOUCH,
+      INPUT_EVENT.MOVE_TOUCH_CALCULATED,
       this.touchMoveCb
     );
 
