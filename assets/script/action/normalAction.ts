@@ -24,10 +24,15 @@ export class NormalAction extends BaseAction {
   }
 
   public updateScore(factor: PlannerFactor) {
+    let score = ACTION_SCORE.NORMAL_ACTION;
     if (factor.detectedWall.length) {
-      return ACTION_SCORE.OBSTACLE_DETECTED;
+      score += ACTION_SCORE.OBSTACLE_DETECTED;
     }
 
-    return ACTION_SCORE.NORMAL_ACTION;
+    if (factor.detectedPlayer.length) {
+      score += ACTION_SCORE.OBSTACLE_DETECTED;
+    }
+
+    return score;
   }
 }

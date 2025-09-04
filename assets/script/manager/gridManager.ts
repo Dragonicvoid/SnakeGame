@@ -5,7 +5,7 @@ import { FoodConfig } from '../interface/food';
 import { GridConfig, SpikeConfig } from '../interface/gridConfig';
 import { Coordinate } from '../interface/map';
 import { GameplayCamera } from '../object/gameplayCamera';
-import { getGridIdxByCoord } from '../util/arenaConvert';
+import { getGridIdxByPos } from '../util/arenaConvert';
 
 const { ccclass, property } = _decorator;
 
@@ -97,7 +97,7 @@ export class GridManager extends Component {
   }
 
   private removeBodyOnGrid(coord: Coordinate, playerID: string) {
-    const gridIdx = getGridIdxByCoord(coord);
+    const gridIdx = getGridIdxByPos(coord);
 
     if (gridIdx === undefined) return;
 
@@ -113,7 +113,7 @@ export class GridManager extends Component {
   }
 
   private addBodyOnGrid(coord: Coordinate, playerID: string) {
-    const gridIdx = getGridIdxByCoord(coord);
+    const gridIdx = getGridIdxByPos(coord);
 
     if (gridIdx === undefined) return;
 

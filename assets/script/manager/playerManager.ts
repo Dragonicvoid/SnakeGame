@@ -1,11 +1,12 @@
 import {
-    _decorator, clamp, Collider2D, Component, game, instantiate, Material, Node, Prefab,
-    RigidBody2D, Sprite, tween, Tween, Vec2, Vec3
+    _decorator, CircleCollider2D, clamp, Collider2D, Component, game, instantiate, Material, Node,
+    Prefab, RigidBody2D, Sprite, tween, Tween, Vec2, Vec3
 } from 'cc';
 
 import { GoToFood } from '../action/goToFood';
 import { GoToPlayerAction } from '../action/goToPlayer';
 import { NormalAction } from '../action/normalAction';
+import { AIDebugger } from '../aiDebugger/aiDebugger';
 import { SnakeRenderable } from '../customRenderable2D/snakeRenderable';
 import { ARENA_DEFAULT_OBJECT_SIZE } from '../enum/arenaConfig';
 import { BOT_ACTION } from '../enum/botAction';
@@ -50,6 +51,9 @@ export class PlayerManager extends Component {
 
   @property(Node)
   private sFoodGrabPref: Node | null = null;
+
+  @property(AIDebugger)
+  private aiDebugger: AIDebugger | null = null;
 
   private touchMoveCb = (delta: Vec2) => {};
 
@@ -160,6 +164,12 @@ export class PlayerManager extends Component {
       direction: moveDir,
       initialMovement: true,
     });
+
+    if (isBot) {
+      this.aiDebugger?.setPlayerList(this.playerList);
+      this.aiDebugger?.setPlayerToDebug(player);
+      this.aiDebugger?.setupScheduler();
+    }
   }
 
   public removeAllPlayers() {
@@ -174,6 +184,9 @@ export class PlayerManager extends Component {
     this.playerList = [];
     this.enemyRender?.setSnakeBody([]);
     this.playerRender?.setSnakeBody([]);
+
+    this.aiDebugger?.setPlayerList([]);
+    this.aiDebugger?.setPlayerToDebug(null);
   }
 
   public findNearestPlayerTowardPoint(
@@ -236,9 +249,10 @@ export class PlayerManager extends Component {
     if (rigidbody?.isValid) {
       rigidbody.group = group;
     }
-    const collider = bodyObj.getComponentInChildren(Collider2D);
+    const collider = bodyObj.getComponentInChildren(CircleCollider2D);
     if (collider?.isValid) {
       collider.group = group;
+      collider.radius = ARENA_DEFAULT_OBJECT_SIZE.SNAKE / 2;
     }
     bodyObj.setParent(this.collParent);
 
@@ -265,7 +279,7 @@ export class PlayerManager extends Component {
   ) {
     const deltaX = x2 - x1;
     const deltaY = y2 - y1;
-    return Math.pow(deltaX, 2) + Math.pow(deltaY, 2) <= Math.pow(r1 + r2, 2);
+    return (Math.pow(deltaX, 2) + Math.pow(deltaY, 2)) <= Math.pow(r1 + r2, 2);
   }
 
   public getPlayerDirection(id: string) {
@@ -332,6 +346,7 @@ export class PlayerManager extends Component {
 
   // defaulted to 60 fps
   updateCoordinate(delta = 0.016) {
+    const { TILE, SNAKE } = ARENA_DEFAULT_OBJECT_SIZE;
     for (let i = 0; i < this.playerList.length; i++) {
       const snake = this.playerList[i];
       const snakeState = snake.state;
@@ -358,7 +373,7 @@ export class PlayerManager extends Component {
               new Vec2(headX, headY)
             );
 
-            if (dist > ARENA_DEFAULT_OBJECT_SIZE.SNAKE) {
+            if (dist > SNAKE) {
               let queueState = { x: headX, y: headY };
               do {
                 queueState = bodyState.movementQueue.shift() ?? {
@@ -369,7 +384,7 @@ export class PlayerManager extends Component {
                   new Vec2(headX, headY),
                   new Vec2(queueState.x, queueState.y)
                 );
-              } while (dist > ARENA_DEFAULT_OBJECT_SIZE.SNAKE);
+              } while (dist > SNAKE);
 
               bodyState.obj?.setPosition(
                 queueState?.x ?? 0,
@@ -393,10 +408,7 @@ export class PlayerManager extends Component {
 
             const snakeDir = new Vec2(bodyState.velocity);
             const newDir = snakeDir.multiply(
-              new Vec2(
-                ARENA_DEFAULT_OBJECT_SIZE.TILE * delta,
-                ARENA_DEFAULT_OBJECT_SIZE.TILE * delta
-              )
+              new Vec2(TILE * delta, TILE * delta)
             );
             bodyState.obj?.setPosition(
               headPos.x + newDir.x,
@@ -417,8 +429,18 @@ export class PlayerManager extends Component {
           finalPos = bodyState.obj?.position ?? new Vec2(0, 0);
           bodyState.position.set(finalPos?.x ?? 0, finalPos?.y ?? 0);
 
-          this.arenaManager?.removeMapBody(prevPos ?? { x: 0, y: 0 }, snake.id);
-          this.arenaManager?.setMapBody(finalPos || { x: 0, y: 0 }, snake.id);
+          for (let y = -1; y <= 1; y++) {
+            for (let x = -1; x <= 1; x++) {
+              this.arenaManager?.removeMapBody(
+                { x: prevPos.x + TILE * x, y: prevPos.y + TILE * y },
+                snake.id
+              );
+              this.arenaManager?.setMapBody(
+                { x: finalPos.x + TILE * x, y: finalPos.y + TILE * y },
+                snake.id
+              );
+            }
+          }
         }
         headX = tempheadX;
         headY = tempheadY;

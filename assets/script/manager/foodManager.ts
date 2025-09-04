@@ -5,7 +5,7 @@ import { GAME_EVENT } from '../enum/event';
 import { FoodConfig } from '../interface/food';
 import { SnakeConfig } from '../interface/player';
 import { FoodSpawner } from '../spawner/foodSpawner';
-import { convertPosToCoord, getGridIdxByCoord } from '../util/arenaConvert';
+import { convertPosToCoord } from '../util/arenaConvert';
 import { GridManager } from './gridManager';
 import { ObstacleManager } from './obstacleManager';
 import { PersistentDataManager } from './persistentDataManager';
@@ -56,8 +56,9 @@ export class FoodManager extends Component {
     if (this.foodSpawner?.node.children.length >= this.maxFoodInstance) return;
 
     const pos = new Vec2(
-      Math.random() * ARENA_DEFAULT_VALUE.WIDTH,
-      Math.random() * ARENA_DEFAULT_VALUE.HEIGHT
+      Math.random() * ARENA_DEFAULT_VALUE.WIDTH - ARENA_DEFAULT_VALUE.WIDTH / 2,
+      Math.random() * ARENA_DEFAULT_VALUE.HEIGHT -
+        ARENA_DEFAULT_VALUE.HEIGHT / 2
     );
     const coord = convertPosToCoord(pos.x, pos.y);
     const isSafe = this.obsManager?.isPosSafeForSpawn(coord);

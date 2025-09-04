@@ -194,6 +194,9 @@
     "obsManager": {
       "__id__": 117
     },
+    "aiDebugger": {
+      "__id__": 50
+    },
     "_id": "fbyJMXFeZNrI6oGnevyQjo"
   },
   {
@@ -266,9 +269,6 @@
     },
     "_enabled": true,
     "__prefab": null,
-    "aiDebugger": {
-      "__id__": 50
-    },
     "_id": "f141CyrLJEBIxlUkC09YX1"
   },
   {
@@ -1918,7 +1918,7 @@
       "b": 255,
       "a": 255
     },
-    "_lineWidth": 1,
+    "_lineWidth": 2,
     "_strokeColor": {
       "__type__": "cc.Color",
       "r": 0,
@@ -1998,8 +1998,8 @@
     "__prefab": null,
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 100,
-      "height": 100
+      "width": 0,
+      "height": 0
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -3632,6 +3632,9 @@
     },
     "sFoodGrabPref": {
       "__id__": 100
+    },
+    "aiDebugger": {
+      "__id__": 50
     },
     "_id": "e4XBGHgJRNy43eI2gX1zMB"
   },

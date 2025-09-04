@@ -1,6 +1,6 @@
 import {
-    _decorator, Collider2D, Component, Contact2DType, director, game, math, Node, PhysicsGroup,
-    PhysicsGroup2D, PhysicsSystem2D, RigidBody2D, Vec2, Vec3
+    _decorator, Collider2D, Component, Contact2DType, director, EPhysics2DDrawFlags, game, math,
+    Node, PhysicsGroup, PhysicsGroup2D, PhysicsSystem2D, RigidBody2D, Vec2, Vec3
 } from 'cc';
 
 import { BaseAction } from '../action/baseAction';
@@ -67,6 +67,8 @@ export class GameManager extends Component {
   private gameUpdateCb = () => {};
 
   public startGame() {
+    PersistentDataManager.instance.selectedMap = Math.random() < 0.5 ? 0 : 1;
+    this.arenaManager?.initializedMap();
     this.gameStartTime = game.totalTime;
     this.uiManager?.showStartUI(false);
     this.inputField?.startInputListener();
@@ -128,12 +130,12 @@ export class GameManager extends Component {
     this.foodCollideCb = this.onFoodCollide.bind(this);
     PhysicsSystem2D.instance.on(
       Contact2DType.BEGIN_CONTACT,
-      this.headCollideCb,
+      this.headCollideCb
     );
 
     PhysicsSystem2D.instance.on(
       Contact2DType.BEGIN_CONTACT,
-      this.foodCollideCb,
+      this.foodCollideCb
     );
   }
 
@@ -346,5 +348,13 @@ export class GameManager extends Component {
       detectedPlayer: detectedPlayer,
       detectedWall: detectedWall,
     });
+
+    snake.state.debugData = {
+      actionName: snake.action?.mapKey,
+      enemyID: snake.id,
+      enemyPath: snake.action?.path,
+      pathfindingState: snake.action?.prevPathfindingData,
+      possibleActions: possibleActions,
+    };
   }
 }

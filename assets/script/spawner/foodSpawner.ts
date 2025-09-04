@@ -2,7 +2,6 @@ import { _decorator, Component, Node, random, Vec2 } from 'cc';
 
 import { ARENA_DEFAULT_VALUE } from '../enum/arenaConfig';
 import { BasePooler } from '../pooler/basePooler';
-import { convertPosToArenaPos } from '../util/arenaConvert';
 
 const { ccclass, property } = _decorator;
 
@@ -25,14 +24,12 @@ export class FoodSpawner extends Component {
   }
 
   public spawn(pos: Vec2) {
-    const targetPos: Vec2 = convertPosToArenaPos(pos.x, pos.y);
-
     const food = this.pooler?.getNode();
 
     if (!food?.isValid) return;
 
     food.parent = this.parent;
-    food.setPosition(targetPos.x, targetPos.y);
+    food.setPosition(pos.x, pos.y);
     food.active = true;
 
     return food

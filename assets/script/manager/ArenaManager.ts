@@ -1,5 +1,6 @@
 import { _decorator, Component, Node, Vec2 } from 'cc';
 
+import { AIDebugger } from '../aiDebugger/aiDebugger';
 import { configMaps } from '../defaultValue/map';
 import {
     ARENA_DEFAULT_OBJECT_SIZE, ARENA_DEFAULT_VALUE, ARENA_OBJECT_TYPE
@@ -8,7 +9,9 @@ import { FoodConfig } from '../interface/food';
 import { GridConfig, SpikeConfig } from '../interface/gridConfig';
 import { Coordinate, TileMapData } from '../interface/map';
 import { SnakeConfig } from '../interface/player';
-import { convertCoorToArenaPos, getGridIdxByCoord } from '../util/arenaConvert';
+import {
+    convertArenaPosToCoord, convertCoorToArenaPos, getGridIdxByPos as getGridIdxByArenaPos
+} from '../util/arenaConvert';
 import { GridManager } from './gridManager';
 import { ObstacleManager } from './obstacleManager';
 import { PersistentDataManager } from './persistentDataManager';
@@ -23,17 +26,20 @@ export class ArenaManager extends Component {
   @property(ObstacleManager)
   private obsManager: ObstacleManager | null = null;
 
+  @property(AIDebugger)
+  private aiDebugger: AIDebugger | null = null;
+
   public mapData: TileMapData[][] = [[]];
 
   public spawnPos: Vec2[] = [];
 
   public centerPos: Vec2 = new Vec2();
 
-  protected start(): void {
+  protected onLoad(): void {
     this.initializedMap();
   }
 
-  private initializedMap() {
+  public initializedMap() {
     const mapIdx = PersistentDataManager.instance.selectedMap;
     const map = configMaps[mapIdx];
     this.spawnPos = [];
@@ -41,13 +47,37 @@ export class ArenaManager extends Component {
       Math.floor(map.row / 2),
       Math.floor(map.col / 2)
     );
+    this.mapData = [[]];
+    this.gridManager?.setup();
+    this.obsManager?.clearObstacle();
+    this.obsManager?.initializeObstacleMap();
 
     for (let y = map.col - 1; y >= 0; y--) {
+      this.mapData[y] = new Array(map.row);
+      let str = "";
       for (let x = 0; x < map.row; x++) {
+        const posX =
+          x * ARENA_DEFAULT_OBJECT_SIZE.TILE - ARENA_DEFAULT_VALUE.WIDTH / 2;
+        const posY =
+          y * ARENA_DEFAULT_OBJECT_SIZE.TILE - ARENA_DEFAULT_VALUE.HEIGHT / 2;
+        const gridIdx = getGridIdxByArenaPos({
+          x: posX,
+          y: posY,
+        });
+        this.mapData[y][x] = {
+          x: posX,
+          y: posY,
+          gridIdx: gridIdx,
+          type: ARENA_OBJECT_TYPE.NONE,
+          playerIDList: [],
+        };
         const idx = y * map.row + x;
-        this.handleTileByType(map.maps[idx], { x: x, y: map.col - 1 - y });
+        this.handleTileByType(map.maps[idx], { x: x, y: y });
+        str += map.maps[idx] + ",";
       }
     }
+
+    this.aiDebugger?.setMapToDebug(this.mapData);
   }
 
   private handleTileByType(type: ARENA_OBJECT_TYPE, coor: Coordinate) {
@@ -69,6 +99,17 @@ export class ArenaManager extends Component {
         break;
       default:
         break;
+    }
+    this.updateTileType(coor, type);
+  }
+
+  public updateTileType(coord: Coordinate, type: ARENA_OBJECT_TYPE) {
+    if (
+      this.mapData &&
+      this.mapData[coord.y] &&
+      this.mapData[coord.y][coord.x]
+    ) {
+      this.mapData[coord.y][coord.x].type = type;
     }
   }
 
@@ -190,7 +231,7 @@ export class ArenaManager extends Component {
     // check its surroundings
     for (let i = -1; i <= 1; i++) {
       for (let j = -1; j <= 1; j++) {
-        const gridIdx = getGridIdxByCoord({
+        const gridIdx = getGridIdxByArenaPos({
           x: pos.x + j * ARENA_DEFAULT_VALUE.GRID_WIDTH,
           y: pos.y + i * ARENA_DEFAULT_VALUE.GRID_HEIGHT,
         });
@@ -213,16 +254,14 @@ export class ArenaManager extends Component {
     return result;
   }
 
-  public setMapBody(coord: Coordinate, playerId: string) {
+  public setMapBody(pos: Coordinate, playerId: string) {
     if (!this.mapData) return;
 
-    const { TILE } = ARENA_DEFAULT_OBJECT_SIZE;
-    const idxX = Math.floor(coord.x / TILE);
-    const idxY = Math.floor(coord.y / TILE);
+    const coord = convertArenaPosToCoord(pos.x, pos.y);
 
-    if (!this.mapData[idxX] || !this.mapData[idxX][idxY]) return;
+    if (!this.mapData[coord.y] || !this.mapData[coord.y][coord.x]) return;
 
-    this.mapData[idxX][idxY].playerIDList.push(playerId);
+    this.mapData[coord.y][coord.x].playerIDList.push(playerId);
   }
 
   public removePlayerMapBody(player: SnakeConfig) {
@@ -231,17 +270,15 @@ export class ArenaManager extends Component {
     });
   }
 
-  public removeMapBody(coord: Coordinate, playerId: string) {
+  public removeMapBody(pos: Coordinate, playerId: string) {
     if (!this.mapData) return;
 
-    const { TILE } = ARENA_DEFAULT_OBJECT_SIZE;
-    const idxX = Math.floor(coord.x / TILE);
-    const idxY = Math.floor(coord.y / TILE);
+    const coord = convertArenaPosToCoord(pos.x, pos.y);
 
-    if (!this.mapData[idxX] || !this.mapData[idxX][idxY]) return;
+    if (!this.mapData[coord.y] || !this.mapData[coord.y][coord.x]) return;
 
-    this.mapData[idxX][idxY].playerIDList = this.mapData[idxX][
-      idxY
+    this.mapData[coord.y][coord.x].playerIDList = this.mapData[coord.y][
+      coord.x
     ].playerIDList.filter((id) => {
       return id !== playerId;
     });
