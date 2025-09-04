@@ -1,14 +1,24 @@
 import {
-    _decorator, CCFloat, Color, Component, EventTarget, Graphics, Label, math, Node
-} from 'cc';
+  _decorator,
+  CCFloat,
+  Color,
+  Component,
+  EventTarget,
+  Graphics,
+  Label,
+  math,
+  Node,
+} from "cc";
 
 import {
-    ARENA_DEFAULT_OBJECT_SIZE, ARENA_DEFAULT_VALUE, ARENA_OBJECT_TYPE
-} from '../enum/arenaConfig';
-import { Coordinate, TileMapData } from '../interface/map';
-import { SnakeConfig } from '../interface/player';
-import { convertCoorToArenaPos, convertPosToCoord } from '../util/arenaConvert';
-import { shouldDrawMap, shouldDrawPathfinding } from '../util/query';
+  ARENA_DEFAULT_OBJECT_SIZE,
+  ARENA_DEFAULT_VALUE,
+  ARENA_OBJECT_TYPE,
+} from "../enum/arenaConfig";
+import { Coordinate, TileMapData } from "../interface/map";
+import { SnakeConfig } from "../interface/player";
+import { convertCoorToArenaPos, convertPosToCoord } from "../util/arenaConvert";
+import { shouldDrawMap, shouldDrawPathfinding } from "../util/query";
 
 const { ccclass, property } = _decorator;
 
@@ -117,7 +127,7 @@ export class AIDebugger extends Component {
         ctx.circle(
           this.map[y][x].x + TILE / 2,
           this.map[y][x].y + TILE / 2,
-          10
+          10,
         );
         ctx.stroke();
         ctx.close();

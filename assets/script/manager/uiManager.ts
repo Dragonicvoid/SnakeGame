@@ -1,8 +1,8 @@
-import { _decorator, Component, Label, Node, Vec2, Vec3 } from 'cc';
+import { _decorator, Component, Label, Node, Vec2, Vec3 } from "cc";
 
-import { INPUT_EVENT } from '../enum/event';
-import { GameOverData } from '../interface/gameOver';
-import { PersistentDataManager } from './persistentDataManager';
+import { INPUT_EVENT } from "../enum/event";
+import { GameOverData } from "../interface/gameOver";
+import { PersistentDataManager } from "./persistentDataManager";
 
 const { ccclass, property } = _decorator;
 
@@ -58,15 +58,15 @@ export class UIManager extends Component {
 
     PersistentDataManager.instance.eventTarget.on(
       INPUT_EVENT.START_TOUCH,
-      this.touchStartCb
+      this.touchStartCb,
     );
     PersistentDataManager.instance.eventTarget.on(
       INPUT_EVENT.MOVE_TOUCH,
-      this.touchMoveCb
+      this.touchMoveCb,
     );
     PersistentDataManager.instance.eventTarget.on(
       INPUT_EVENT.END_TOUCH,
-      this.touchEndCb
+      this.touchEndCb,
     );
   }
 
@@ -101,7 +101,7 @@ export class UIManager extends Component {
 
     const currPos = new Vec2(
       this.movUI?.worldPosition.x,
-      this.movUI?.worldPosition.y
+      this.movUI?.worldPosition.y,
     );
     const dist = Vec2.distance(currPos, pos);
     const dir = new Vec2(pos.x - currPos.x, pos.y - currPos.y);
@@ -113,7 +113,7 @@ export class UIManager extends Component {
       this.movUI?.setWorldPosition(
         pos.x - normVec.x,
         pos.y - normVec.y,
-        this.movUI.position.z
+        this.movUI.position.z,
       );
       dir.set(normVec.x, normVec.y);
     } else {
@@ -122,22 +122,22 @@ export class UIManager extends Component {
 
     PersistentDataManager.instance.eventTarget.emit(
       INPUT_EVENT.MOVE_TOUCH_CALCULATED,
-      dir
+      dir,
     );
   }
 
   onDestroy() {
     PersistentDataManager.instance.eventTarget.off(
       INPUT_EVENT.START_TOUCH,
-      this.touchStartCb
+      this.touchStartCb,
     );
     PersistentDataManager.instance.eventTarget.off(
       INPUT_EVENT.MOVE_TOUCH,
-      this.touchMoveCb
+      this.touchMoveCb,
     );
     PersistentDataManager.instance.eventTarget.off(
       INPUT_EVENT.END_TOUCH,
-      this.touchEndCb
+      this.touchEndCb,
     );
   }
 }

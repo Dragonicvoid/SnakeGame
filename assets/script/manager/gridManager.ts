@@ -1,11 +1,11 @@
-import { _decorator, Component, game, math, Vec2 } from 'cc';
+import { _decorator, Component, game, math, Vec2 } from "cc";
 
-import { ARENA_DEFAULT_VALUE } from '../enum/arenaConfig';
-import { FoodConfig } from '../interface/food';
-import { GridConfig, SpikeConfig } from '../interface/gridConfig';
-import { Coordinate } from '../interface/map';
-import { GameplayCamera } from '../object/gameplayCamera';
-import { getGridIdxByPos } from '../util/arenaConvert';
+import { ARENA_DEFAULT_VALUE } from "../enum/arenaConfig";
+import { FoodConfig } from "../interface/food";
+import { GridConfig, SpikeConfig } from "../interface/gridConfig";
+import { Coordinate } from "../interface/map";
+import { GameplayCamera } from "../object/gameplayCamera";
+import { getGridIdxByPos } from "../util/arenaConvert";
 
 const { ccclass, property } = _decorator;
 
@@ -37,8 +37,12 @@ export class GridManager extends Component {
           x2: j * GRID_WIDTH + GRID_WIDTH - ARENA_DEFAULT_VALUE.WIDTH / 2,
           y1: i * GRID_HEIGHT - ARENA_DEFAULT_VALUE.HEIGHT / 2,
           y2: i * GRID_HEIGHT + GRID_HEIGHT - ARENA_DEFAULT_VALUE.HEIGHT / 2,
-          midX: j * GRID_WIDTH + GRID_WIDTH * 0.5 - ARENA_DEFAULT_VALUE.WIDTH / 2,
-          midY: i * GRID_HEIGHT + GRID_HEIGHT * 0.5 - ARENA_DEFAULT_VALUE.HEIGHT / 2,
+          midX:
+            j * GRID_WIDTH + GRID_WIDTH * 0.5 - ARENA_DEFAULT_VALUE.WIDTH / 2,
+          midY:
+            i * GRID_HEIGHT +
+            GRID_HEIGHT * 0.5 -
+            ARENA_DEFAULT_VALUE.HEIGHT / 2,
           foods: [] as FoodConfig[],
           spikes: [] as SpikeConfig[],
           chickBodies: new Map(),

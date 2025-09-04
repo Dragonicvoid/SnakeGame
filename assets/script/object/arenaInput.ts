@@ -1,7 +1,16 @@
-import { _decorator, Component, EventTouch, Input, input, Node, Vec2, Vec3 } from 'cc';
+import {
+  _decorator,
+  Component,
+  EventTouch,
+  Input,
+  input,
+  Node,
+  Vec2,
+  Vec3,
+} from "cc";
 
-import { INPUT_EVENT } from '../enum/event';
-import { PersistentDataManager } from '../manager/persistentDataManager';
+import { INPUT_EVENT } from "../enum/event";
+import { PersistentDataManager } from "../manager/persistentDataManager";
 
 const { ccclass, property } = _decorator;
 
@@ -37,7 +46,7 @@ export class ArenaInput extends Component {
 
     PersistentDataManager.instance.eventTarget.emit(
       INPUT_EVENT.START_TOUCH,
-      uiLoc
+      uiLoc,
     );
   }
 
@@ -46,7 +55,7 @@ export class ArenaInput extends Component {
 
     PersistentDataManager.instance.eventTarget.emit(
       INPUT_EVENT.MOVE_TOUCH,
-      uiLoc
+      uiLoc,
     );
   }
 

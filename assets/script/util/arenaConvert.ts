@@ -1,12 +1,15 @@
-import { math, Vec2 } from 'cc';
+import { math, Vec2 } from "cc";
 
-import { ARENA_DEFAULT_OBJECT_SIZE, ARENA_DEFAULT_VALUE } from '../enum/arenaConfig';
-import { Coordinate } from '../interface/map';
+import {
+  ARENA_DEFAULT_OBJECT_SIZE,
+  ARENA_DEFAULT_VALUE,
+} from "../enum/arenaConfig";
+import { Coordinate } from "../interface/map";
 
 export function convertCoorToArenaPos(x: number, y: number): Vec2 {
   const offset: Vec2 = new Vec2(
     ARENA_DEFAULT_VALUE.WIDTH / 2,
-    ARENA_DEFAULT_VALUE.HEIGHT / 2
+    ARENA_DEFAULT_VALUE.HEIGHT / 2,
   );
 
   const realPos = {
@@ -20,7 +23,7 @@ export function convertCoorToArenaPos(x: number, y: number): Vec2 {
 export function convertPosToCoord(x: number, y: number): Coordinate {
   const offset: Vec2 = new Vec2(
     ARENA_DEFAULT_VALUE.WIDTH / 2,
-    ARENA_DEFAULT_VALUE.HEIGHT / 2
+    ARENA_DEFAULT_VALUE.HEIGHT / 2,
   );
   const coord = {
     x: Math.floor((x + offset.x) / ARENA_DEFAULT_OBJECT_SIZE.TILE),
@@ -33,7 +36,7 @@ export function convertPosToCoord(x: number, y: number): Coordinate {
 export function convertArenaPosToCoord(x: number, y: number): Coordinate {
   const offset: Vec2 = new Vec2(
     ARENA_DEFAULT_VALUE.WIDTH / 2,
-    ARENA_DEFAULT_VALUE.HEIGHT / 2
+    ARENA_DEFAULT_VALUE.HEIGHT / 2,
   );
 
   const coord = {
@@ -53,15 +56,15 @@ export function getGridIdxByPos(pos: Coordinate) {
   };
 
   const maxRow = Math.ceil(
-    ARENA_DEFAULT_VALUE.WIDTH / ARENA_DEFAULT_VALUE.GRID_WIDTH
+    ARENA_DEFAULT_VALUE.WIDTH / ARENA_DEFAULT_VALUE.GRID_WIDTH,
   );
   const currX = Math.floor(
     math.clamp(pos.x + offset.x, 0, ARENA_DEFAULT_VALUE.WIDTH) /
-      ARENA_DEFAULT_VALUE.GRID_WIDTH
+      ARENA_DEFAULT_VALUE.GRID_WIDTH,
   );
   const currY = Math.floor(
     math.clamp(pos.y + offset.y, 0, ARENA_DEFAULT_VALUE.HEIGHT) /
-      ARENA_DEFAULT_VALUE.GRID_HEIGHT
+      ARENA_DEFAULT_VALUE.GRID_HEIGHT,
   );
   currIdx = currY * maxRow + currX;
   if (currIdx < 0) return undefined;

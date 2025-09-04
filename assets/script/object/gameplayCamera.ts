@@ -1,11 +1,21 @@
 import {
-    _decorator, Camera, Color, Component, EventKeyboard, input, Input, KeyCode, Node, v2, view
-} from 'cc';
+  _decorator,
+  Camera,
+  Color,
+  Component,
+  EventKeyboard,
+  input,
+  Input,
+  KeyCode,
+  Node,
+  v2,
+  view,
+} from "cc";
 
-import { CAMERA_DIMENSION_MULTIPLIER } from '../enum/cameraConfig';
-import { SnakeConfig } from '../interface/player';
-import { checkAABBCollision } from '../util/algorithm';
-import { shouldDebug } from '../util/query';
+import { CAMERA_DIMENSION_MULTIPLIER } from "../enum/cameraConfig";
+import { SnakeConfig } from "../interface/player";
+import { checkAABBCollision } from "../util/algorithm";
+import { shouldDebug } from "../util/query";
 
 const { ccclass, property } = _decorator;
 

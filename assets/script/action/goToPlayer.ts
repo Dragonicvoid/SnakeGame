@@ -1,13 +1,13 @@
-import { _decorator, math, Vec2 } from 'cc';
+import { _decorator, math, Vec2 } from "cc";
 
-import { ACTION_SCORE } from '../enum/actionScore';
-import { ARENA_DEFAULT_OBJECT_SIZE } from '../enum/arenaConfig';
-import { BOT_ACTION } from '../enum/botAction';
-import { BOT_CONFIG } from '../enum/botConfig';
-import { PlannerFactor } from '../interface/ai';
-import { SnakeActionData, SnakeConfig } from '../interface/player';
-import { getDistance } from '../util/aStar';
-import { BaseAction } from './baseAction';
+import { ACTION_SCORE } from "../enum/actionScore";
+import { ARENA_DEFAULT_OBJECT_SIZE } from "../enum/arenaConfig";
+import { BOT_ACTION } from "../enum/botAction";
+import { BOT_CONFIG } from "../enum/botConfig";
+import { PlannerFactor } from "../interface/ai";
+import { SnakeActionData, SnakeConfig } from "../interface/player";
+import { getDistance } from "../util/aStar";
+import { BaseAction } from "./baseAction";
 
 const { ccclass, property } = _decorator;
 
@@ -71,8 +71,8 @@ export class GoToPlayerAction extends BaseAction {
         frontRay,
         new Vec2(
           currHeadPos.x - mainPlayerHead.x,
-          currHeadPos.y - mainPlayerHead.y
-        )
+          currHeadPos.y - mainPlayerHead.y,
+        ),
       );
     }
 
@@ -233,7 +233,7 @@ export class GoToPlayerAction extends BaseAction {
   protected isValidToBeAggresive(
     playerList: SnakeConfig[],
     currPlayer: SnakeConfig,
-    currTime?: number
+    currTime?: number,
   ) {
     if (typeof currTime !== "number") {
       currTime = performance.now();
@@ -245,7 +245,7 @@ export class GoToPlayerAction extends BaseAction {
       if (!player?.isBot || !player.isAlive) continue;
 
       const goToPlayerAct = player.possibleActions?.get(
-        BOT_ACTION.CHASE_PLAYER
+        BOT_ACTION.CHASE_PLAYER,
       );
 
       if (

@@ -1,9 +1,11 @@
-import { _decorator, Component, Vec2 } from 'cc';
+import { _decorator, Component, Vec2 } from "cc";
 
 import {
-    ARENA_DEFAULT_OBJECT_SIZE, ARENA_DEFAULT_VALUE, ARENA_OBJECT_TYPE
-} from '../enum/arenaConfig';
-import { Coordinate, TileMapData } from '../interface/map';
+  ARENA_DEFAULT_OBJECT_SIZE,
+  ARENA_DEFAULT_VALUE,
+  ARENA_OBJECT_TYPE,
+} from "../enum/arenaConfig";
+import { Coordinate, TileMapData } from "../interface/map";
 
 const { ccclass, property } = _decorator;
 
@@ -77,7 +79,8 @@ export class AStar extends Component {
 
       // found path
       if (
-        (currentPoint.point && getDistance(currentPoint.point, target) <= TILE) ||
+        (currentPoint.point &&
+          getDistance(currentPoint.point, target) <= TILE) ||
         currDepth >= maxDepth
       ) {
         if (
@@ -318,7 +321,7 @@ export function getStringCoordName(coord: Coordinate) {
 
 export function getIdxByPos(pos: Coordinate) {
   const { TILE } = ARENA_DEFAULT_OBJECT_SIZE;
-  const { WIDTH, HEIGHT} = ARENA_DEFAULT_VALUE;
+  const { WIDTH, HEIGHT } = ARENA_DEFAULT_VALUE;
   const idxX = Math.floor((pos.x + WIDTH / 2) / TILE);
   const idxY = Math.floor((pos.y + HEIGHT / 2) / TILE);
 

@@ -1,14 +1,14 @@
-import { _decorator, CCInteger, Component, Node, tween, Vec2, Vec3 } from 'cc';
+import { _decorator, CCInteger, Component, Node, tween, Vec2, Vec3 } from "cc";
 
-import { ARENA_DEFAULT_VALUE } from '../enum/arenaConfig';
-import { GAME_EVENT } from '../enum/event';
-import { FoodConfig } from '../interface/food';
-import { SnakeConfig } from '../interface/player';
-import { FoodSpawner } from '../spawner/foodSpawner';
-import { convertPosToCoord } from '../util/arenaConvert';
-import { GridManager } from './gridManager';
-import { ObstacleManager } from './obstacleManager';
-import { PersistentDataManager } from './persistentDataManager';
+import { ARENA_DEFAULT_VALUE } from "../enum/arenaConfig";
+import { GAME_EVENT } from "../enum/event";
+import { FoodConfig } from "../interface/food";
+import { SnakeConfig } from "../interface/player";
+import { FoodSpawner } from "../spawner/foodSpawner";
+import { convertPosToCoord } from "../util/arenaConvert";
+import { GridManager } from "./gridManager";
+import { ObstacleManager } from "./obstacleManager";
+import { PersistentDataManager } from "./persistentDataManager";
 
 const { ccclass, property } = _decorator;
 
@@ -58,7 +58,7 @@ export class FoodManager extends Component {
     const pos = new Vec2(
       Math.random() * ARENA_DEFAULT_VALUE.WIDTH - ARENA_DEFAULT_VALUE.WIDTH / 2,
       Math.random() * ARENA_DEFAULT_VALUE.HEIGHT -
-        ARENA_DEFAULT_VALUE.HEIGHT / 2
+        ARENA_DEFAULT_VALUE.HEIGHT / 2,
     );
     const coord = convertPosToCoord(pos.x, pos.y);
     const isSafe = this.obsManager?.isPosSafeForSpawn(coord);
@@ -104,10 +104,10 @@ export class FoodManager extends Component {
             this.removeFood(food);
             PersistentDataManager.instance.eventTarget.emit(
               GAME_EVENT.PLAYER_INCREASE_SIZE,
-              player
+              player,
             );
           },
-        }
+        },
       )
       .start();
   }

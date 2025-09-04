@@ -1,4 +1,4 @@
-import { Node, Sprite, Vec2 } from 'cc';
+import { Node, Sprite, Vec2 } from "cc";
 
 export interface XY {
   x: number;

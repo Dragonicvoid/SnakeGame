@@ -1,6 +1,6 @@
-import { Sprite, Vec2, Vec3 } from 'cc';
+import { Sprite, Vec2, Vec3 } from "cc";
 
-import { FoodConfig } from './food';
+import { FoodConfig } from "./food";
 
 export type GridConfig = {
   x1: number;

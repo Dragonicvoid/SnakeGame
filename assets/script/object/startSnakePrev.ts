@@ -1,8 +1,8 @@
-import { _decorator, Component, Node, tween, Tween, Vec2 } from 'cc';
+import { _decorator, Component, Node, tween, Tween, Vec2 } from "cc";
 
-import { SnakeRenderablePrev } from '../customRenderable2D/snakeRenderablePrev';
-import { ARENA_DEFAULT_OBJECT_SIZE } from '../enum/arenaConfig';
-import { sleep } from '../util/other';
+import { SnakeRenderablePrev } from "../customRenderable2D/snakeRenderablePrev";
+import { ARENA_DEFAULT_OBJECT_SIZE } from "../enum/arenaConfig";
+import { sleep } from "../util/other";
 
 const { ccclass, property } = _decorator;
 

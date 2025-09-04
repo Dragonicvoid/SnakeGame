@@ -1,13 +1,23 @@
-import { _decorator, CCBoolean, Component, instantiate, Node, UITransform, Vec2 } from 'cc';
+import {
+  _decorator,
+  CCBoolean,
+  Component,
+  instantiate,
+  Node,
+  UITransform,
+  Vec2,
+} from "cc";
 
 import {
-    ARENA_DEFAULT_OBJECT_SIZE, ARENA_DEFAULT_VALUE, ARENA_OBJECT_TYPE
-} from '../enum/arenaConfig';
-import { Coordinate, TileMapData } from '../interface/map';
-import { ObstacleData } from '../interface/other';
-import { GameplayCamera } from '../object/gameplayCamera';
-import { convertCoorToArenaPos, getGridIdxByPos } from '../util/arenaConvert';
-import { GridManager } from './gridManager';
+  ARENA_DEFAULT_OBJECT_SIZE,
+  ARENA_DEFAULT_VALUE,
+  ARENA_OBJECT_TYPE,
+} from "../enum/arenaConfig";
+import { Coordinate, TileMapData } from "../interface/map";
+import { ObstacleData } from "../interface/other";
+import { GameplayCamera } from "../object/gameplayCamera";
+import { convertCoorToArenaPos, getGridIdxByPos } from "../util/arenaConvert";
+import { GridManager } from "./gridManager";
 
 const { ccclass, property } = _decorator;
 
@@ -136,7 +146,7 @@ export class ObstacleManager extends Component {
     x: number,
     y: number,
     type: ARENA_OBJECT_TYPE,
-    id?: number
+    id?: number,
   ) {
     const idxX = Math.floor(x);
     const idxY = Math.floor(y);

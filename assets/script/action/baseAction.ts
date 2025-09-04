@@ -1,15 +1,15 @@
-import { _decorator, Component, misc, Vec2 } from 'cc';
+import { _decorator, Component, misc, Vec2 } from "cc";
 
-import { ACTION_SCORE } from '../enum/actionScore';
-import { ARENA_DEFAULT_OBJECT_SIZE } from '../enum/arenaConfig';
-import { BOT_ACTION } from '../enum/botAction';
-import { BOT_CONFIG } from '../enum/botConfig';
-import { PlannerFactor } from '../interface/ai';
-import { FoodConfig, FoodState } from '../interface/food';
-import { Coordinate } from '../interface/map';
-import { SnakeActionData, SnakeConfig } from '../interface/player';
-import { getOrientationBetweenVector } from '../util/algorithm';
-import { AStar, AStarSearchData, getDistance } from '../util/aStar';
+import { ACTION_SCORE } from "../enum/actionScore";
+import { ARENA_DEFAULT_OBJECT_SIZE } from "../enum/arenaConfig";
+import { BOT_ACTION } from "../enum/botAction";
+import { BOT_CONFIG } from "../enum/botConfig";
+import { PlannerFactor } from "../interface/ai";
+import { FoodConfig, FoodState } from "../interface/food";
+import { Coordinate } from "../interface/map";
+import { SnakeActionData, SnakeConfig } from "../interface/player";
+import { getOrientationBetweenVector } from "../util/algorithm";
+import { AStar, AStarSearchData, getDistance } from "../util/aStar";
 
 const { ccclass, property } = _decorator;
 

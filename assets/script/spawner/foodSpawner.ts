@@ -1,7 +1,7 @@
-import { _decorator, Component, Node, random, Vec2 } from 'cc';
+import { _decorator, Component, Node, random, Vec2 } from "cc";
 
-import { ARENA_DEFAULT_VALUE } from '../enum/arenaConfig';
-import { BasePooler } from '../pooler/basePooler';
+import { ARENA_DEFAULT_VALUE } from "../enum/arenaConfig";
+import { BasePooler } from "../pooler/basePooler";
 
 const { ccclass, property } = _decorator;
 
@@ -32,6 +32,6 @@ export class FoodSpawner extends Component {
     food.setPosition(pos.x, pos.y);
     food.active = true;
 
-    return food
+    return food;
   }
 }
