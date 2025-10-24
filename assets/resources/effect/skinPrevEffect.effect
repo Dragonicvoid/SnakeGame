@@ -66,6 +66,7 @@ CCProgram sprite-fs %{
   #include <builtin/internal/embedded-alpha>
   #include <builtin/internal/alpha-test>
   #include <builtin/uniforms/cc-global>
+  #include <snakeLib>
 
   in vec4 color;
   in vec2 uv0;
@@ -77,6 +78,7 @@ CCProgram sprite-fs %{
   }
 
   vec4 frag () {
+    useAllSnakeLib();
     vec4 o = vec4(1, 1, 1, 1);
 
     o *= getTexture(1.0 - uv0);

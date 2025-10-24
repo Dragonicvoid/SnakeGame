@@ -5286,7 +5286,7 @@
     "_string": "Play",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
-    "_actualFontSize": 40,
+    "_actualFontSize": 49.888888888888886,
     "_fontSize": 40,
     "_fontFamily": "Arial",
     "_lineHeight": 60,
@@ -5579,7 +5579,7 @@
     "__prefab": null,
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 222.32421875,
+      "width": 222.2845418203647,
       "height": 75.6
     },
     "_anchorPoint": {
@@ -5612,7 +5612,7 @@
     "_string": "Select Skin :",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
-    "_actualFontSize": 40,
+    "_actualFontSize": 49.888888888888886,
     "_fontSize": 40,
     "_fontFamily": "Arial",
     "_lineHeight": 60,

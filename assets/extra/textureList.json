@@ -4,16 +4,18 @@
       "id": 1001,
       "name": "Snake Skin",
       "effect_name": "",
-      "sprite_frame": "image/textureSpf/snake_skin",
+      "sprite_frame": "",
+      "effect_code": "vec4 getTexture(vec2 uv) {uv.y += cc_time.x * 2.;vec2 uvI = floor(uv);vec2 f = fract(uv);float offset = rand(uvI.y) * 0.5;float dist = f.x - 0.25;vec4 bgCol = vec4(0.9686, 0.8549, 0.6235, 1.);vec4 waveCol = vec4(1., 1., 1., 1.);float waveY = (sin((0.5 - dist) / 0.5 * -PI) * 0.2 + 1.0);float wave = saturate(1.0 - (when_lt(dist, 0.) + when_gt(dist, 0.5)));wave *= when_le(distance(f, vec2(f.x, waveY)), 0.025); vec4 col = mix(bgCol, waveCol, wave);return col;}",
       "defines": {
         "USE_TEXTURE": true
       }
     },
     {
       "id": 1002,
-      "name": "Brick Skin",
+      "name": "Wither",
       "effect_name": "",
-      "sprite_frame": "image/textureSpf/test",
+      "sprite_frame": "",
+      "effect_code": "vec4 getTexture(vec2 uv) {\nvec3 lightDir = vec3(1., 0., 1.);\nvec2 uv0Main = uv;\nuv0Main.y = fract(uv0Main.y + cc_time.x);\nfloat inkSize = 6.;\nvec2 uv0Second = ((vec2(uv.x, fract(uv.y + cc_time.x * 0.5)) - 0.5) * 2.) * inkSize;\nvec2 fUVSecond = fract(uv0Second);\nvec2 iUVSecond = floor(uv0Second);\nfloat randOffset = rand(vec2(when_ge(iUVSecond.x, 0.), iUVSecond.y));\nfloat randOffsetNext = rand(\n    vec2(when_ge(iUVSecond.x, 0.), \n    when_ge(iUVSecond.y + 1., inkSize) * -inkSize + when_lt(iUVSecond.y + 1., inkSize) * (iUVSecond.y + 1.))\n);\nfloat bodyDistance = abs(uv0Main.x - 0.5);\nfloat sinBody = sin(uv0Main.y * 2. * PI) * 0.05;\nfloat offset = mix(randOffset, randOffsetNext, smoothstep(0., 1., fUVSecond.y)) * 0.1;\nfloat maxDist = 0.3 + sinBody + offset;\nfloat witherSize = 2.;\nfloat slowModif = 4.;\nfloat uvThirdX = when_ge(uv.x, 0.5) * (fract((uv.x - 0.5) - cc_time.x / slowModif) + when_lt(fract((uv.x - 0.5) - cc_time.x / slowModif), 0.5) * 0.5) + \n        when_lt(uv.x, 0.5) * fract(fract((uv.x + 0.5) + cc_time.x / slowModif) - 0.5);\nvec2 uv0Third = ((vec2(uvThirdX, uv.y) - 0.5) * 2.) * witherSize;\nvec2 fUVThird = fract(uv0Third);\nvec2 iUVThird = floor(uv0Third);\nfloat randWither = step(rand(iUVThird), 0.85);\nfloat sizeRand = rand(iUVThird + cc_time.x * 2.);\nfloat distFromMid = distance(uv.x, 0.5);\nfloat wither = randWither * when_lt(distance(fUVThird, vec2(0.5, 0.5)), 0.05 - sizeRand * 0.05) * (1.0 - pow(distFromMid / 0.5, 5.));\nfloat mainBody = when_le(bodyDistance, maxDist);\nfloat rot = (atan(fUVThird.y - 0.5, fUVThird.x - 0.5) / TWO_PI + 0.5);\nfloat rotValue = rot * 21.;\nfloat rotV = fract(rotValue);\nfloat rotI = floor(rotValue);\nfloat nextRotI = mod((rotI + 1.), 21.);\nfloat osmosisOffset = mix(rand(vec3(rotI, iUVThird.x, iUVThird.y)), rand(vec3(nextRotI, iUVThird.x, iUVThird.y)), smoothstep(0., 1., rotV)) * 0.2 - 0.1;\nosmosisOffset += fract((sin(rot * PI * 3. + cc_time.x * 3.) + 1.0) / 2.) * 0.1;\nmainBody *= \n    randWither * (saturate(1.0 - smoothstep(maxDist - 0.1, maxDist, distance(uv.x, 0.5)) + \n                    (step(distance(fUVThird, vec2(0.5, 0.5)), 0.3) + osmosisOffset))) + \n    (1.0 - randWither) * mainBody;\nmainBody = saturate(mainBody + wither);\nvec4 col = vec4(0., 0., 0., 1.);\ncol.a *= mainBody;\nreturn col;}",
       "defines": {
         "USE_TEXTURE": true
       }
@@ -21,10 +23,10 @@
 
     {
       "id": 2001,
-      "name": "Snake Skin Move",
-      "effect_name": "effect/textureFx/infiniteScroll",
-      "sprite_frame": "image/textureSpf/snake_skin",
-      "effect_code": "vec4 getTexture(vec2 uv) {\n\tfloat time = cc_time.x;\n\tvec2 realUv = vec2(uv.x, fract(uv.y + time));\n\treturn texture(mainTexture, realUv);\n}",
+      "name": "Rainbow",
+      "effect_name": "",
+      "sprite_frame": "image/textureSpf/bubble",
+      "effect_code": "vec3 desaturate(vec3 col, float deSatVal) {\nfloat L = 0.3*col.r + 0.6*col.g + 0.1*col.b;\nfloat new_r = col.r + deSatVal * (L - col.r);\nfloat new_g = col.g + deSatVal * (L - col.g);\nfloat new_b = col.b + deSatVal * (L - col.b);\nreturn vec3(new_r, new_g, new_b);\n}\nvec3 rainbow(float level)\n{\n  float r = float(level <= 2.0) + float(level > 4.0) * 0.5;\n  float g = max(1.0 - abs(level - 2.0) * 0.5, 0.0);\n  float b = (1.0 - (level - 4.0) * 0.5) * float(level >= 4.0);\n  return desaturate(vec3(r, g, b), 0.35);\n}\nvec3 smoothRainbow (float x)\n{\n  float level1 = floor(x*6.0);\n  float level2 = min(6.0, floor(x*6.0) + 1.0);\n  vec3 a = rainbow(level1);\n  vec3 b = rainbow(level2);\n  return mix(a, b, fract(x*6.0));\n}\nvec4 getTexture(vec2 uv) {\n  vec2 uvTex = uv;\n  uvTex.y = fract(uvTex.y + cc_time.x / 10.);\n  vec2 uvRainbow = uv;\n  uvRainbow.x = fract(uvRainbow.x + cc_time.x);\n  vec3 rainbow = smoothRainbow(fract(uvRainbow.x + uv.y));\n  vec4 tex = texture(mainTexture, uvTex);\n  vec4 col = vec4(rainbow.r, rainbow.g, rainbow.b, 1.0);\n return mix(col, tex, tex.a);\n}",
       "defines": {
         "USE_TEXTURE": true
       }

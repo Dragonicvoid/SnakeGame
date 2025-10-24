@@ -1,8 +1,8 @@
-import { _decorator, Component, Node, tween, Tween, Vec2 } from "cc";
+import { _decorator, Component, Node, tween, Tween, Vec2 } from 'cc';
 
-import { SnakeRenderablePrev } from "../customRenderable2D/snakeRenderablePrev";
-import { ARENA_DEFAULT_OBJECT_SIZE } from "../enum/arenaConfig";
-import { sleep } from "../util/other";
+import { SnakeRenderablePrev } from '../customRenderable2D/snakeRenderablePrev';
+import { ARENA_DEFAULT_OBJECT_SIZE } from '../enum/arenaConfig';
+import { sleep } from '../util/other';
 
 const { ccclass, property } = _decorator;
 
@@ -20,30 +20,6 @@ export class StartSnakePrev extends Component {
   private mult: number[] = [];
 
   private snakeShape = [
-    {
-      position: new Vec2(0, this.snakeSize * 6),
-      radius: this.snakeSize,
-      movementQueue: [],
-      velocity: new Vec2(),
-    },
-    {
-      position: new Vec2(0, this.snakeSize * 5),
-      radius: this.snakeSize,
-      movementQueue: [],
-      velocity: new Vec2(),
-    },
-    {
-      position: new Vec2(0, this.snakeSize * 4),
-      radius: this.snakeSize,
-      movementQueue: [],
-      velocity: new Vec2(),
-    },
-    {
-      position: new Vec2(0, this.snakeSize * 3),
-      radius: this.snakeSize,
-      movementQueue: [],
-      velocity: new Vec2(),
-    },
     {
       position: new Vec2(0, this.snakeSize * 2),
       radius: this.snakeSize,
@@ -73,31 +49,7 @@ export class StartSnakePrev extends Component {
       radius: this.snakeSize,
       movementQueue: [],
       velocity: new Vec2(),
-    },
-    {
-      position: new Vec2(0, this.snakeSize * -3),
-      radius: this.snakeSize,
-      movementQueue: [],
-      velocity: new Vec2(),
-    },
-    {
-      position: new Vec2(0, this.snakeSize * -4),
-      radius: this.snakeSize,
-      movementQueue: [],
-      velocity: new Vec2(),
-    },
-    {
-      position: new Vec2(0, this.snakeSize * -5),
-      radius: this.snakeSize,
-      movementQueue: [],
-      velocity: new Vec2(),
-    },
-    {
-      position: new Vec2(0, this.snakeSize * -6),
-      radius: this.snakeSize,
-      movementQueue: [],
-      velocity: new Vec2(),
-    },
+    }
   ];
 
   onLoad() {
