@@ -62,6 +62,10 @@
     {
       "name": "TEXTURE",
       "value": 16
+    },
+    {
+      "name": "GAMEPLAY_NO_REFLECT",
+      "value": 32
     }
   ],
   "general": {

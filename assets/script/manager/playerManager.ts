@@ -1,39 +1,25 @@
 import {
-  _decorator,
-  CircleCollider2D,
-  clamp,
-  Collider2D,
-  Component,
-  game,
-  instantiate,
-  Material,
-  Node,
-  Prefab,
-  RigidBody2D,
-  Sprite,
-  tween,
-  Tween,
-  Vec2,
-  Vec3,
-} from "cc";
+    _decorator, CircleCollider2D, clamp, Collider2D, Component, game, instantiate, Material, Node,
+    Prefab, RigidBody2D, Sprite, tween, Tween, Vec2, Vec3
+} from 'cc';
 
-import { GoToFood } from "../action/goToFood";
-import { GoToPlayerAction } from "../action/goToPlayer";
-import { NormalAction } from "../action/normalAction";
-import { AIDebugger } from "../aiDebugger/aiDebugger";
-import { SnakeRenderable } from "../customRenderable2D/snakeRenderable";
-import { ARENA_DEFAULT_OBJECT_SIZE } from "../enum/arenaConfig";
-import { BOT_ACTION } from "../enum/botAction";
-import { GAME_EVENT, INPUT_EVENT } from "../enum/event";
-import { PHYSICS_GROUP } from "../enum/physics";
-import { SNAKE_CONFIG } from "../enum/snakeConfig";
-import { SnakeType } from "../enum/snakeType";
-import { Coordinate } from "../interface/map";
-import { SnakeBody, SnakeConfig, SnakeState } from "../interface/player";
-import { SkinSelect } from "../object/skinSelect";
-import { getStringCoordName } from "../util/aStar";
-import { ArenaManager } from "./ArenaManager";
-import { PersistentDataManager } from "./persistentDataManager";
+import { GoToFood } from '../action/goToFood';
+import { GoToPlayerAction } from '../action/goToPlayer';
+import { NormalAction } from '../action/normalAction';
+import { AIDebugger } from '../aiDebugger/aiDebugger';
+import { SnakeRenderable } from '../customRenderable2D/snakeRenderable';
+import { ARENA_DEFAULT_OBJECT_SIZE } from '../enum/arenaConfig';
+import { BOT_ACTION } from '../enum/botAction';
+import { GAME_EVENT, INPUT_EVENT } from '../enum/event';
+import { PHYSICS_GROUP } from '../enum/physics';
+import { SNAKE_CONFIG } from '../enum/snakeConfig';
+import { SnakeType } from '../enum/snakeType';
+import { Coordinate } from '../interface/map';
+import { SnakeBody, SnakeConfig, SnakeState } from '../interface/player';
+import { SkinSelect } from '../object/skinSelect';
+import { getStringCoordName } from '../util/aStar';
+import { ArenaManager } from './ArenaManager';
+import { PersistentDataManager } from './persistentDataManager';
 
 const { ccclass, property } = _decorator;
 

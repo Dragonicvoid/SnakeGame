@@ -30,6 +30,17 @@
       "defines": {
         "USE_TEXTURE": true
       }
+    },
+
+    {
+      "id": 2002,
+      "name": "Snake Skin Move",
+      "effect_name": "effect/textureFx/infiniteScroll",
+      "sprite_frame": "image/textureSpf/snake_skin",
+      "effect_code": "vec4 getTexture(vec2 uv) {\n\tfloat time = cc_time.x;\n\tvec2 realUv = vec2(uv.x, fract(uv.y + time));\n\treturn texture(mainTexture, realUv);\n}",
+      "defines": {
+        "USE_TEXTURE": true
+      }
     }
   ]
 }

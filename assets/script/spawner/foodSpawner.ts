@@ -1,7 +1,6 @@
-import { _decorator, Component, Node, random, Vec2 } from "cc";
+import { _decorator, Component, Node, random, Vec2 } from 'cc';
 
-import { ARENA_DEFAULT_VALUE } from "../enum/arenaConfig";
-import { BasePooler } from "../pooler/basePooler";
+import { BasePooler } from '../pooler/basePooler';
 
 const { ccclass, property } = _decorator;
 

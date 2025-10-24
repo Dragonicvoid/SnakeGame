@@ -1,14 +1,14 @@
-import { _decorator, CCInteger, Component, Node, tween, Vec2, Vec3 } from "cc";
+import { _decorator, CCInteger, Component, Node, tween, Vec2, Vec3 } from 'cc';
 
-import { ARENA_DEFAULT_VALUE } from "../enum/arenaConfig";
-import { GAME_EVENT } from "../enum/event";
-import { FoodConfig } from "../interface/food";
-import { SnakeConfig } from "../interface/player";
-import { FoodSpawner } from "../spawner/foodSpawner";
-import { convertPosToCoord } from "../util/arenaConvert";
-import { GridManager } from "./gridManager";
-import { ObstacleManager } from "./obstacleManager";
-import { PersistentDataManager } from "./persistentDataManager";
+import { ARENA_DEFAULT_VALUE } from '../enum/arenaConfig';
+import { GAME_EVENT } from '../enum/event';
+import { FoodConfig } from '../interface/food';
+import { SnakeConfig } from '../interface/player';
+import { FoodSpawner } from '../spawner/foodSpawner';
+import { convertPosToCoord } from '../util/arenaConvert';
+import { GridManager } from './gridManager';
+import { ObstacleManager } from './obstacleManager';
+import { PersistentDataManager } from './persistentDataManager';
 
 const { ccclass, property } = _decorator;
 

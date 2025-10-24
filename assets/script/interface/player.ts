@@ -1,17 +1,17 @@
-import { Component, Node, Vec2, Vec3 } from "cc";
+import { Component, Node, Vec2, Vec3 } from 'cc';
 
-import { BaseAction } from "../action/baseAction";
-import { SnakeRenderable } from "../customRenderable2D/snakeRenderable";
-import { BOT_ACTION } from "../enum/botAction";
-import { SnakeType } from "../enum/snakeType";
-import { ArenaManager } from "../manager/ArenaManager";
-import { FoodManager } from "../manager/foodManager";
-import { PlayerManager } from "../manager/playerManager";
-import { AStarSearchData } from "../util/aStar";
-import { FoodConfig } from "./food";
-import { Coordinate } from "./map";
-import { XY } from "./other";
-import { SkinDetail } from "./skinList";
+import { BaseAction } from '../action/baseAction';
+import { SnakeRenderable } from '../customRenderable2D/snakeRenderable';
+import { BOT_ACTION } from '../enum/botAction';
+import { SnakeType } from '../enum/snakeType';
+import { ArenaManager } from '../manager/ArenaManager';
+import { FoodManager } from '../manager/foodManager';
+import { PlayerManager } from '../manager/playerManager';
+import { AStarSearchData } from '../util/aStar';
+import { FoodConfig } from './food';
+import { Coordinate } from './map';
+import { XY } from './other';
+import { SkinDetail } from './skinList';
 
 export interface SnakeConfig {
   id: string;

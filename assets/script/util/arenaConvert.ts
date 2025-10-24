@@ -1,10 +1,7 @@
-import { math, Vec2 } from "cc";
+import { math, Vec2 } from 'cc';
 
-import {
-  ARENA_DEFAULT_OBJECT_SIZE,
-  ARENA_DEFAULT_VALUE,
-} from "../enum/arenaConfig";
-import { Coordinate } from "../interface/map";
+import { ARENA_DEFAULT_OBJECT_SIZE, ARENA_DEFAULT_VALUE } from '../enum/arenaConfig';
+import { Coordinate } from '../interface/map';
 
 export function convertCoorToArenaPos(x: number, y: number): Vec2 {
   const offset: Vec2 = new Vec2(
