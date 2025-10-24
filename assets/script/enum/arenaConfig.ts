@@ -2,15 +2,16 @@ export enum ARENA_DEFAULT_VALUE {
   WIDTH = 700,
   HEIGHT = 700,
 
-  GRID_WIDTH = 100,
-  GRID_HEIGHT = 100,
+  GRID_WIDTH = 200,
+  GRID_HEIGHT = 200,
 }
 
 export enum ARENA_DEFAULT_OBJECT_SIZE {
   FOOD = 10,
   SPIKE = 20,
-  SNAKE = 20,
+  SNAKE = 40,
   TILE = 20,
+  FOOD_GRABBER = 30,
 }
 
 export enum ARENA_OBJECT_TYPE {
@@ -19,4 +20,5 @@ export enum ARENA_OBJECT_TYPE {
   WALL = 1 << 2,
   SPIKE = 1 << 3,
   SNAKE = 1 << 4,
+  SPAWN_POINT = 1 << 5,
 }

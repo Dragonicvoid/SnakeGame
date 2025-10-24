@@ -1,0 +1,89 @@
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: sprite-vs:vert
+      frag: sprite-fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:
+        offset: { value: [0.1, 0.1] }
+        mainTexture: { value: grey }
+}%
+
+CCProgram sprite-vs %{
+  precision mediump float;
+  #include <cc-global>
+
+  in vec3 a_position;
+  in vec2 a_texCoord;
+
+  out vec3 v_position;
+  out vec2 uv0;
+
+  in vec4 a_color;
+  out vec4 v_color;
+
+  vec4 vert () {
+    vec4 pos = vec4(a_position, 1);
+    v_position = a_position;
+    v_color = a_color;
+    pos = cc_matViewProj * pos;
+    uv0 = a_texCoord;
+
+    return pos;
+  }
+}%
+
+CCProgram sprite-fs %{
+  precision mediump float;
+
+  #include <cc-global>
+  #include <embedded-alpha>
+  #include <alpha-test>
+
+  in vec2 uv0;
+  #pragma builtin(local)
+  layout(set = 2, binding = 11) uniform sampler2D cc_spriteTexture;
+
+  in vec3 v_position;
+  in vec4 v_color;
+
+  uniform sampler2D mainTexture;
+  uniform Constants {
+    vec2 offset;
+  };
+
+  vec2 convertToUVOffset(vec2 uv) {
+    vec2 result = uv * (vec2(1., 1.) - offset * 2.) + offset;
+    return result;
+  }
+
+  vec4 frag () {
+    vec4 o = vec4(1, 1, 1, 1);
+  
+    o *= v_color;
+    o *= CCSampleWithAlphaSeparated(cc_spriteTexture, uv0);
+
+    vec4 fragPos = (cc_matViewProj * vec4(v_position + vec3(0., 0., 0.), 1.));
+    vec2 screenCoords = fragPos.xy * 0.5 + 0.5;
+    vec2 uvReal = convertToUVOffset(screenCoords);
+    
+    float grayscale = (0.2126 * o.r + 0.7152 * o.g + 0.0722 * o.b) * o.a;
+
+    // brighter they are, the harder they reflect
+    vec4 reflectColor = CCSampleWithAlphaSeparated(mainTexture, uvReal.xy);
+    o.rgb *= mix(reflectColor.rgb, vec3(1., 1., 1.), grayscale);
+
+    ALPHA_TEST(o);
+    return o;
+  }
+}%

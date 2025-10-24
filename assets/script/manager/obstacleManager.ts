@@ -1,26 +1,24 @@
 import {
   _decorator,
+  CCBoolean,
   Component,
+  instantiate,
   Node,
   UITransform,
   Vec2,
-  CCBoolean,
-  instantiate,
 } from "cc";
-import { Coordinate, TileMapData } from "../interface/map";
+
 import {
   ARENA_DEFAULT_OBJECT_SIZE,
   ARENA_DEFAULT_VALUE,
   ARENA_OBJECT_TYPE,
 } from "../enum/arenaConfig";
-import {
-  convertArenaPosToCoord,
-  convertCoorToArenaPos,
-  convertPosToArenaPos,
-  getGridIdxByCoord,
-} from "../util/arenaConvert";
-import { ObstacleSpriteRef } from "../interface/other";
+import { Coordinate, TileMapData } from "../interface/map";
+import { ObstacleData } from "../interface/other";
 import { GameplayCamera } from "../object/gameplayCamera";
+import { convertCoorToArenaPos, getGridIdxByPos } from "../util/arenaConvert";
+import { GridManager } from "./gridManager";
+
 const { ccclass, property } = _decorator;
 
 @ccclass("ObstacleManager")
@@ -36,9 +34,12 @@ export class ObstacleManager extends Component {
   @property(GameplayCamera)
   private readonly gameplayCamera?: GameplayCamera;
 
+  @property(GridManager)
+  private gridManager: GridManager | null = null;
+
   private obstacleMap = new Array<TileMapData[]>();
 
-  private spikes = new Array<ObstacleSpriteRef>();
+  private spikes = new Array<ObstacleData>();
 
   onLoad() {
     this.clearObstacle();
@@ -47,32 +48,37 @@ export class ObstacleManager extends Component {
 
   public initializeObstacleMap() {
     const { TILE } = ARENA_DEFAULT_OBJECT_SIZE;
-    const cols = ARENA_DEFAULT_VALUE.WIDTH / TILE;
-    const rows = ARENA_DEFAULT_VALUE.HEIGHT / TILE;
+    const rows = Math.floor(ARENA_DEFAULT_VALUE.WIDTH / TILE);
+    const cols = Math.floor(ARENA_DEFAULT_VALUE.HEIGHT / TILE);
+    this.obstacleMap = [[]];
 
-    for (let y = 0; y < rows; y++) {
-      const colData: TileMapData[] = [];
-      for (let x = 0; x < cols; x++) {
-        const gridPos = getGridIdxByCoord({
-          x: x * TILE,
-          y: y * TILE,
+    for (let y = cols - 1; y >= 0; y--) {
+      this.obstacleMap[y] = new Array(rows);
+      for (let x = 0; x < rows; x++) {
+        const pos = convertCoorToArenaPos(x, y);
+        const gridPos = getGridIdxByPos({
+          x: pos.x,
+          y: pos.y,
         });
         const tileData: TileMapData = {
           type: ARENA_OBJECT_TYPE.NONE,
           playerIDList: [],
-          x: x,
-          y: y,
+          x: pos.x,
+          y: pos.y,
           gridIdx: gridPos,
         };
-        colData.push(tileData);
+        this.obstacleMap[y][x] = tileData;
       }
-      this.obstacleMap.push(colData);
     }
   }
 
   public clearObstacle() {
-    this.obstacleMap = [];
+    this.spikes.forEach((s) => {
+      s.obj?.destroy();
+    });
     this.spikes = [];
+
+    this.obstacleMap = [[]];
   }
 
   public createSpike(coor: Coordinate) {
@@ -82,14 +88,24 @@ export class ObstacleManager extends Component {
     if (!spikeUiTransform) return;
     const { width, height } = spikeUiTransform;
     this.setObstacleMapObject(coor.x, coor.y, ARENA_OBJECT_TYPE.SPIKE);
-    const spike = {
+    const pos = convertCoorToArenaPos(coor.x, coor.y);
+    const gridPos = getGridIdxByPos({
+      x: pos.x,
+      y: pos.y,
+    });
+    this.gridManager?.addSpike({
+      gridIndex: gridPos ?? 0,
+      position: pos,
+    });
+    const spike: ObstacleData = {
       parent: obstacleParent,
-      position: convertCoorToArenaPos(coor.x, coor.y),
+      position: pos,
       dimension: new Vec2(width, height),
       targetOpacity: 255,
     };
+    const obj = this.instantiateSpike(coor);
+    spike.obj = obj;
     this.spikes.push(spike);
-    this.instantiateSpike(coor);
   }
 
   public instantiateSpike(coor: Coordinate) {
@@ -101,6 +117,8 @@ export class ObstacleManager extends Component {
     const pos = convertCoorToArenaPos(coor.x, coor.y);
     newSpike.setPosition(pos.x, pos.y);
     newSpike.active = true;
+
+    return newSpike;
   }
 
   private getObstacleMapObjectType(x: number, y: number): ARENA_OBJECT_TYPE {
@@ -133,7 +151,7 @@ export class ObstacleManager extends Component {
     const idxX = Math.floor(x);
     const idxY = Math.floor(y);
 
-    this.obstacleMap[idxX][idxY].type = type;
+    this.obstacleMap[idxY][idxX].type = type;
   }
 
   public getObstacleList(obstacleType: ARENA_OBJECT_TYPE) {
@@ -145,34 +163,16 @@ export class ObstacleManager extends Component {
     }
   }
 
-  private spawnObstacleSprite(
-    spriteRef: ObstacleSpriteRef,
-    obstacleType: ARENA_OBJECT_TYPE,
-  ) {
-    const isSpriteAlreadySpawned = spriteRef.sprite;
-
-    if (isSpriteAlreadySpawned) return;
-
-    const obstacle = this.getObstacleList(obstacleType);
-    if (!obstacle) return;
-
-    const sprite = spriteRef.sprite;
-    const { position } = spriteRef;
-    if (this.obstacleParent && sprite) {
-      // only insert to parent when sprite doesn't have parent yet
-      this.obstacleParent.insertChild(sprite.node, 0);
-      sprite.node.setPosition(position.x, position.y);
-      sprite.node.active = true;
-      spriteRef.parent = this.obstacleParent;
-    }
-  }
-
   public isPosSafeForSpawn(coord: Coordinate) {
-    return (
-      (this.obstacleMap[coord.x][coord.y].type &
-        (ARENA_OBJECT_TYPE.SPIKE | ARENA_OBJECT_TYPE.WALL)) ===
-      0
-    );
+    let safe = 0;
+    for (let y = -1; y <= 1; y++) {
+      for (let x = -1; x <= 1; x++) {
+        safe |=
+          this.obstacleMap[coord.y + y]?.[coord.x + x]?.type &
+          (ARENA_OBJECT_TYPE.SPIKE | ARENA_OBJECT_TYPE.WALL);
+      }
+    }
+    return safe === 0;
   }
 
   onDestroy(): void {

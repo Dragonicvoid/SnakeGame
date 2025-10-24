@@ -1,13 +1,14 @@
 import { _decorator, math, Vec2 } from "cc";
-import { BaseAction } from "./baseAction";
-import { getDistance } from "../util/aStar";
-import { BOT_ACTION } from "../enum/botAction";
-import { SnakeActionData, SnakeConfig } from "../interface/player";
-import { Movement } from "../interface/gameplay";
-import { ARENA_DEFAULT_OBJECT_SIZE } from "../enum/arenaConfig";
-import { PlannerFactor } from "../interface/ai";
+
 import { ACTION_SCORE } from "../enum/actionScore";
+import { ARENA_DEFAULT_OBJECT_SIZE } from "../enum/arenaConfig";
+import { BOT_ACTION } from "../enum/botAction";
 import { BOT_CONFIG } from "../enum/botConfig";
+import { PlannerFactor } from "../interface/ai";
+import { SnakeActionData, SnakeConfig } from "../interface/player";
+import { getDistance } from "../util/aStar";
+import { BaseAction } from "./baseAction";
+
 const { ccclass, property } = _decorator;
 
 @ccclass("GoToPlayerAction")
@@ -27,8 +28,6 @@ export class GoToPlayerAction extends BaseAction {
   private aggresiveEndsTStamp = 0;
 
   private hasEnterPlayerCone = false;
-
-  private hasChanceToAttack = false;
 
   private headingLeft = false;
 
@@ -60,7 +59,7 @@ export class GoToPlayerAction extends BaseAction {
     if (!mainPlayer) return;
 
     const { TILE } = ARENA_DEFAULT_OBJECT_SIZE;
-    const frontRay = mainPlayer.state.velocity;
+    const frontRay = mainPlayer.state.movementDir;
     const currHeadPos = player.state.body[0].position;
     const mainPlayerHead = mainPlayer.state.body[0].position;
 
@@ -100,8 +99,8 @@ export class GoToPlayerAction extends BaseAction {
     };
 
     let mainPlayerSide = {
-      x: normFront[0] * TILE * 4,
-      y: normFront[1] * TILE * 4,
+      x: normFront[0] * TILE * 2,
+      y: normFront[1] * TILE * 2,
     };
 
     const frontPlayerSide = {
@@ -184,15 +183,8 @@ export class GoToPlayerAction extends BaseAction {
 
     const currentTStamp = performance.now();
     const deltaTStamp = currentTStamp - this.aggresiveStartTStamp;
-    // lose aggresion after duration or player too far
-    if (
-      this.isAggresive &&
-      (deltaTStamp / 1000 > this.aggresiveDuration ||
-        getDistance(
-          mainPlayer.state.body[0].position,
-          player.state.body[0].position,
-        ) > 600)
-    ) {
+    // lose aggresion after duration
+    if (this.isAggresive && deltaTStamp / 1000 > this.aggresiveDuration) {
       this.isAggresive = false;
       this.aggresiveEndsTStamp = currentTStamp;
       return this.score;
@@ -252,7 +244,9 @@ export class GoToPlayerAction extends BaseAction {
 
       if (!player?.isBot || !player.isAlive) continue;
 
-      const goToPlayerAct = player.possibleActions.get(BOT_ACTION.CHASE_PLAYER);
+      const goToPlayerAct = player.possibleActions?.get(
+        BOT_ACTION.CHASE_PLAYER,
+      );
 
       if (
         goToPlayerAct instanceof GoToPlayerAction &&

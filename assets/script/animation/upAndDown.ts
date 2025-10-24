@@ -8,6 +8,7 @@ import {
   Tween,
   Vec3,
 } from "cc";
+
 const { ccclass, property } = _decorator;
 
 @ccclass("UpAndDown")
@@ -28,7 +29,7 @@ export class UpAndDown extends Component {
   private mult: number = 1;
 
   protected onLoad(): void {
-    if (!this.sprite.isValid) return;
+    if (!this.sprite?.isValid) return;
 
     this.initPos = this.sprite.node.position.clone();
   }
@@ -36,7 +37,6 @@ export class UpAndDown extends Component {
   protected start(): void {
     let obj = { val: this.height * this.mult * -1 };
 
-    console.log(this.sprite);
     this.animate(obj);
   }
 
@@ -49,7 +49,7 @@ export class UpAndDown extends Component {
         },
         {
           onUpdate: () => {
-            this.sprite.node.setPosition(
+            this.sprite?.node.setPosition(
               this.initPos.x,
               Math.floor(this.initPos.y + Math.floor(obj.val / 2) * 2),
             );

@@ -1,21 +1,22 @@
 import {
   _decorator,
-  Component,
   Camera,
-  view,
-  Node,
-  v2,
-  KeyCode,
+  Color,
+  Component,
   EventKeyboard,
   input,
   Input,
-  Color,
+  KeyCode,
+  Node,
+  v2,
+  view,
 } from "cc";
-import { SnakeConfig } from "../interface/player";
-import { shouldDebug } from "../util/query";
+
 import { CAMERA_DIMENSION_MULTIPLIER } from "../enum/cameraConfig";
+import { SnakeConfig } from "../interface/player";
 import { checkAABBCollision } from "../util/algorithm";
-import { AIDebugger } from "../aiDebugger/aiDebugger";
+import { shouldDebug } from "../util/query";
+
 const { ccclass, property } = _decorator;
 
 export enum GAMEPLAY_CAMERA_EVENT {
@@ -25,9 +26,6 @@ export enum GAMEPLAY_CAMERA_EVENT {
 
 @ccclass("GameplayCamera")
 export class GameplayCamera extends Component {
-  @property(AIDebugger)
-  private aiDebugger: AIDebugger | null = null;
-
   private defaultOrthoHeight = 320;
 
   private playerToFollow?: SnakeConfig;
@@ -59,7 +57,6 @@ export class GameplayCamera extends Component {
 
   public setPlayerToFollow(playerInstance: SnakeConfig) {
     this.playerToFollow = playerInstance;
-    this.aiDebugger?.setPlayerToDebug(playerInstance);
     if (this.isValid) this.node?.emit(GAMEPLAY_CAMERA_EVENT.LOCK_ON);
   }
 

@@ -1,22 +1,15 @@
 import {
-  _decorator,
-  CCFloat,
-  Color,
-  Component,
-  EventTarget,
-  Graphics,
-  Label,
-  math,
-  Node,
-} from "cc";
-import { SnakeConfig } from "../interface/player";
-import { Coordinate, TileMapData } from "../interface/map";
-import { shouldDrawMap, shouldDrawPathfinding } from "../util/query";
+    _decorator, CCFloat, Color, Component, EventTarget, Graphics, Label, math, Node
+} from 'cc';
+
 import {
-  ARENA_DEFAULT_OBJECT_SIZE,
-  ARENA_DEFAULT_VALUE,
-  ARENA_OBJECT_TYPE,
-} from "../enum/arenaConfig";
+    ARENA_DEFAULT_OBJECT_SIZE, ARENA_DEFAULT_VALUE, ARENA_OBJECT_TYPE
+} from '../enum/arenaConfig';
+import { Coordinate, TileMapData } from '../interface/map';
+import { SnakeConfig } from '../interface/player';
+import { convertCoorToArenaPos, convertPosToCoord } from '../util/arenaConvert';
+import { shouldDrawMap, shouldDrawPathfinding } from '../util/query';
+
 const { ccclass, property } = _decorator;
 
 @ccclass("AIDebugger")
@@ -103,35 +96,29 @@ export class AIDebugger extends Component {
 
     if (!head) return;
 
-    const idxX = Math.floor(head.position.x / TILE);
-    const idxY = Math.floor(head.position.y / TILE);
+    const headCoord = convertPosToCoord(head.position.x, head.position.y);
 
-    const arenaWidth = ARENA_DEFAULT_VALUE.WIDTH ?? 4000;
-    const arenaHeight = ARENA_DEFAULT_VALUE.HEIGHT ?? 4000;
-    const minX = math.clamp(idxX - 6, 0, arenaWidth / TILE);
-    const minY = math.clamp(idxY - 16, 0, arenaHeight / TILE);
-    const maxX = math.clamp(idxX + 6, 0, arenaWidth / TILE);
-    const maxY = math.clamp(idxY + 16, 0, arenaHeight / TILE);
+    const arenaWidth = ARENA_DEFAULT_VALUE.WIDTH;
+    const arenaHeight = ARENA_DEFAULT_VALUE.HEIGHT;
 
-    for (let i = minY; i <= maxY; i++) {
-      for (let j = minX; j <= maxX; j++) {
-        const coord = {
-          x: j * TILE,
-          y: i * TILE,
-        };
-
-        if (!this.map[j] || !this.map[j][i]) return;
+    for (let y = 0; y < Math.floor(arenaHeight / TILE); y++) {
+      for (let x = 0; x < Math.floor(arenaWidth / TILE); x++) {
+        if (!this.map[y] || !this.map[y][x]) return;
 
         if (
-          this.map[j][i].playerIDList.length > 0 ||
-          this.map[j][i].type === ARENA_OBJECT_TYPE.SPIKE
+          this.map[y][x].playerIDList.length > 0 ||
+          this.map[y][x].type === ARENA_OBJECT_TYPE.SPIKE
         ) {
           ctx.strokeColor.set(this.occupyColor);
         } else {
           ctx.strokeColor.set(this.freeColor);
         }
         ctx.lineWidth = 4;
-        ctx.circle(coord.x, coord.y, 10);
+        ctx.circle(
+          this.map[y][x].x + TILE / 2,
+          this.map[y][x].y + TILE / 2,
+          10,
+        );
         ctx.stroke();
         ctx.close();
       }
@@ -147,7 +134,7 @@ export class AIDebugger extends Component {
     ctx.close();
   }
 
-  public setPlayerToDebug(player: SnakeConfig) {
+  public setPlayerToDebug(player: SnakeConfig | null) {
     this.player = player;
   }
 

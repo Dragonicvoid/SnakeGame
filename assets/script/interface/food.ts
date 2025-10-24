@@ -1,13 +1,13 @@
-import { Component, Vec3 } from "cc";
+import { Component, Node, Vec2 } from "cc";
 
 export interface FoodConfig {
   id: string;
   state: FoodState;
   gridIndex: number | undefined;
-  object: Component;
+  object: Node;
 }
 
 export interface FoodState {
-  position: Vec3;
+  position: Vec2;
   eaten: boolean;
 }

@@ -1,0 +1,208 @@
+// Copyright (c) 2017-2020 Xiamen Yaji Software Co., Ltd.
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: sprite-vs:vert
+      frag: sprite-fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties: &props
+        yratio: { value: 0.0 }
+        mainTexture: { value: white }
+}%
+
+CCProgram sprite-vs %{
+  precision highp float;
+  #include <cc-global>
+
+  in float a_body_count;
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec2 a_center;
+  in vec3 a_next_normal_pos;
+  in vec3 a_prev_normal_pos;
+  in vec3 a_next_pos;
+  in vec3 a_prev_pos;
+
+  out float v_radius;
+  out float v_body_count;
+  out vec2 v_center;
+  out vec2 uv;
+  out vec2 v_next_pos_norm;
+  out vec2 v_prev_pos_norm;
+  out vec2 v_next_pos;
+  out vec2 v_prev_pos;
+
+  uniform Const {
+    float yratio;
+  };
+
+  vec4 vert () {
+    vec4 pos = vec4(a_position.xy, 0., 1.);
+    v_radius = a_position.z;
+    v_next_pos_norm = a_next_normal_pos.xy;
+    v_prev_pos_norm = a_prev_normal_pos.xy;
+    v_next_pos = a_next_pos.xy;
+    v_prev_pos = a_prev_pos.xy;
+    v_body_count = a_body_count;
+    v_center = a_center;
+    uv = a_texCoord;
+
+    return cc_matViewProj * pos;
+  }
+}%
+
+CCProgram sprite-fs %{
+  precision highp float;
+  #include <builtin/internal/embedded-alpha>
+  #include <builtin/uniforms/cc-global>
+  #include <snakeLib>
+
+  in float v_radius;
+  in float v_body_count;
+  in vec2 v_center;
+  in vec2 uv;
+  in vec2 v_next_pos_norm;
+  in vec2 v_prev_pos_norm;
+  in vec2 v_next_pos;
+  in vec2 v_prev_pos;
+
+  uniform sampler2D mainTexture;
+
+  struct SDFData {
+    float h;
+    float hClamp;
+    float d;
+    float dClamp;
+    vec2 proj;
+    vec2 projClamp;
+    vec2 projDelta;
+    vec2 projClampDelta;
+  };
+
+  struct texdata
+  {
+    vec2 uv;
+    vec2 actUv;
+    SDFData nextData;
+    SDFData prevData;
+    vec2 prevNorm;
+    vec2 nextNorm;
+    float body_count;
+  };
+
+  vec4 getTexture(vec2 uv) {
+    return texture(mainTexture, uv);
+  }
+
+  vec4 snake_body(texdata tex) {
+    float hasPrev = min(ceil(distance(tex.prevNorm, vec2(0., 0.))), 1.);
+    float hasNext = min(ceil(distance(tex.nextNorm, vec2(0., 0.))), 1.);
+
+    vec2 proj = hasPrev * (1.0 - hasNext) * tex.prevNorm + hasNext * (1.0 - hasPrev) * tex.nextNorm;
+    float isLeft = when_lt(tex.actUv.x, 0.5);
+    float dist = distance(tex.uv.x, 0.5);
+    float distUnclamped = tex.actUv.x - 0.5;
+
+    float mainTexClamp = 0.125;
+    float texUvX = (1.0 - step(mainTexClamp, abs(dist))) * ((distUnclamped + mainTexClamp) / (2. * mainTexClamp));
+    vec4 mainColor = getTexture(vec2(texUvX, tex.actUv.y));
+    vec4 o = mainColor;
+    o.a *= when_lt(dist, mainTexClamp);
+
+    return o;
+  }
+
+  SDFData getSdfData(vec2 u, vec2 v) {
+      float isNull = when_eq(v.x, 0.) * when_eq(v.y, 0.);
+      float h = (1.0 - isNull) * (u.x * v.x + u.y * v.y) / (v.x * v.x + v.y * v.y);
+      float hClamp = min(1. , max(0., h));
+      vec2 proj = v * h;
+      vec2 projClamp = v * hClamp;
+      vec2 projDelta = u - proj;
+      vec2 projClampDelta = u - projClamp;
+      float d = distance(u, proj);
+      float dClamp = distance(u, projClamp);
+
+      SDFData res;
+      res.h = h;
+      res.hClamp = hClamp;
+      res.d = d;
+      res.dClamp = dClamp;
+      res.proj = proj;
+      res.projClamp = projClamp;
+      res.projDelta = projDelta;
+      res.projClampDelta = projClampDelta;
+
+      return res;
+  }
+
+  vec4 frag () {
+    useAllSnakeLib();
+    vec2 uv0 = (uv * 2.) - 1.;
+    vec4 o = vec4(1., 1., 1., 1.);
+
+    vec2 u = uv0;
+    vec2 v = v_prev_pos_norm;
+    SDFData prevData = getSdfData(u,v);
+
+    v = v_next_pos_norm;
+    SDFData nextData = getSdfData(u,v);
+
+    v = v_prev_pos;
+    SDFData prevDataUnnorm = getSdfData(u,v);
+
+    float boundary = 0.5;
+    float inBetween2Vec = and(when_ge(prevData.h, 0.), when_ge(nextData.h, 0.));
+    float minDistClamp = min(prevData.dClamp, nextData.dClamp);
+    float minDist = when_ge(prevData.h, nextData.h) * prevData.d 
+            + when_lt(prevData.h, nextData.h) * nextData.d;
+
+    vec2 vectorUse = when_lt(prevData.dClamp, nextData.dClamp) * prevData.projClamp + when_ge(prevData.dClamp, nextData.dClamp) * nextData.projClamp;
+    float isLeft = when_lt(cross(vec3(uv0.x, uv0.y, 0.), vec3(vectorUse.x, vectorUse.y, 0.)).z, 0.);
+    float textureDistX = 1. - (boundary - minDistClamp);
+    textureDistX = isLeft * (max(boundary - minDistClamp * boundary, 0.)) + (1.0 - isLeft) * min((minDistClamp * boundary) + boundary, 1.) ;
+
+    vectorUse = when_lt(prevData.dClamp, nextData.dClamp) * prevData.proj + when_ge(prevData.dClamp, nextData.dClamp) * nextData.proj;
+    isLeft = when_lt(cross(vec3(uv0.x, uv0.y, 0.), vec3(vectorUse.x, vectorUse.y, 0.)).z, 0.);
+    float actTextureDistX = inBetween2Vec * min(prevData.d, nextData.d) +
+            when_ge(prevData.h, 0.) * (1.0 - inBetween2Vec) * prevData.d +
+            when_ge(nextData.h, 0.) * (1.0 - inBetween2Vec) * nextData.d;
+    actTextureDistX = isLeft * (boundary - minDist * boundary) + (1.0 - isLeft) * min((minDist * boundary) + boundary, 1.);
+
+    // Edge Case the tail Part
+    float lastBackPart = when_eq(v_body_count, 1.) * when_ge(nextData.h, 0.);
+    actTextureDistX = lastBackPart * (1.0 - actTextureDistX) + (1.0 - lastBackPart)* actTextureDistX;
+
+    // Edge case outside both Hvalue;
+    float outsiteHRange = when_eq(prevData.hClamp, 0.) * when_eq(nextData.hClamp, 0.);
+    float outsideIsLeft = when_lt(cross(vec3(v_next_pos_norm.x, v_next_pos_norm.y, 0.), vec3(v_prev_pos_norm.x, v_prev_pos_norm.y, 0.)).z, 0.);
+    float centerDist = distance(vec2(0., 0.), uv0);
+    float outsideX = outsideIsLeft * (1.0 - (boundary - centerDist * boundary)) + (1.0 - outsideIsLeft) * (boundary - centerDist * boundary);
+    actTextureDistX = outsiteHRange * outsideX + (1.0 - outsiteHRange) * actTextureDistX;
+
+    float textureDistY = prevData.hClamp;
+    float actY = fract(prevDataUnnorm.h);
+
+    texdata tex;
+    tex.uv = vec2(textureDistX, textureDistY);
+    tex.actUv = vec2(actTextureDistX, actY);
+    tex.prevData = prevData;
+    tex.nextData = nextData;
+    tex.prevNorm = v_prev_pos_norm;
+    tex.nextNorm = v_next_pos_norm;
+    tex.body_count = v_body_count;
+
+    o *= snake_body(tex);
+    return o;
+  }
+}%

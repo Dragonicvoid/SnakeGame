@@ -1,12 +1,16 @@
 import { _decorator, Component, misc, Vec2 } from "cc";
-import { AStar, AStarSearchData, getDistance } from "../util/aStar";
-import { SnakeActionData, SnakeConfig } from "../interface/player";
+
+import { ACTION_SCORE } from "../enum/actionScore";
+import { ARENA_DEFAULT_OBJECT_SIZE } from "../enum/arenaConfig";
+import { BOT_ACTION } from "../enum/botAction";
+import { BOT_CONFIG } from "../enum/botConfig";
+import { PlannerFactor } from "../interface/ai";
 import { FoodConfig, FoodState } from "../interface/food";
 import { Coordinate } from "../interface/map";
-import { BOT_CONFIG } from "../enum/botConfig";
-import { BOT_ACTION } from "../enum/botAction";
-import { Movement } from "../interface/gameplay";
-import { PlannerFactor } from "../interface/ai";
+import { SnakeActionData, SnakeConfig } from "../interface/player";
+import { getOrientationBetweenVector } from "../util/algorithm";
+import { AStar, AStarSearchData, getDistance } from "../util/aStar";
+
 const { ccclass, property } = _decorator;
 
 @ccclass("BaseAction")
@@ -117,7 +121,8 @@ export class BaseAction extends Component {
   }
 
   protected turnRadiusModification(
-    newMovement: Movement,
+    player: SnakeConfig,
+    newMovement: Vec2,
     turnRadius: number,
     coorDir?: Coordinate,
   ) {
@@ -127,15 +132,13 @@ export class BaseAction extends Component {
     if (!manager) return;
     const { playerManager } = manager;
 
-    coorDir = coorDir
-      ? coorDir
-      : playerManager?.getPlayerDirection(newMovement.player_id);
+    coorDir = coorDir ? coorDir : playerManager?.getPlayerDirection(player.id);
     if (!coorDir) return;
 
     //TURN RADIUS config range 0 - 5, transform to degrees = 30 - 180
     const turnRadians = misc.degreesToRadians(turnRadius * 30 + 30);
     const currDir = new Vec2(coorDir.x, coorDir.y);
-    const newDir = new Vec2(newMovement.vector.x, newMovement.vector.y);
+    const newDir = new Vec2(newMovement.x, newMovement.y);
     const orientation = getOrientationBetweenVector(currDir, newDir);
     const angle = Vec2.angle(currDir, newDir);
     if (Math.abs(angle) < turnRadians) return newDir;
@@ -154,16 +157,16 @@ export class BaseAction extends Component {
 
     if (!playerManager?.isValid) return;
 
-    let newDir = player.movementDirection.vector;
+    let newDir = player.state.movementDir;
     let currDir = playerManager.getPlayerDirection(player.id);
 
     newDir = new Vec2(
-      Math.ceil(botNewDir.x * 100),
-      Math.ceil(botNewDir.y * 100),
+      Math.ceil(botNewDir.x * ARENA_DEFAULT_OBJECT_SIZE.TILE),
+      Math.ceil(botNewDir.y * ARENA_DEFAULT_OBJECT_SIZE.TILE),
     );
 
     if (newDir) {
-      this.player.movementDirection.vector = new Vec2(newDir.x, newDir.y);
+      player.state.movementDir = new Vec2(newDir.x, newDir.y);
     }
 
     const targetDir = {
@@ -180,39 +183,31 @@ export class BaseAction extends Component {
       limit++
     ) {
       if (!playerManager) return;
-      newDir = this.turnRadiusModification(
-        {
-          player_id: player.id,
-          vector: new Vec2(targetDir.x, targetDir.y),
-        } as Movement,
-        BOT_CONFIG.TURN_RADIUS,
-        currDir,
-      );
+      newDir =
+        this.turnRadiusModification(
+          player,
+          new Vec2(targetDir.x, targetDir.y),
+          BOT_CONFIG.TURN_RADIUS,
+          currDir,
+        ) ?? new Vec2(0, 0);
       if (!newDir) return;
-      currDir = {
-        x: newDir.x,
-        y: newDir.y,
-      };
+      currDir = new Vec2(newDir.x, newDir.y);
       dirArray.push(newDir);
     }
+
     if (dirArray.length <= 0) return;
 
     dirArray.forEach((item, idx) => {
       const schedule = idx * 0.064;
       this.scheduleOnce(() => {
         playerManager.handleMovement(player.id, {
-          direction: {
-            x: item.x,
-            y: item.y,
-          },
+          direction: new Vec2(item.x, item.y),
         });
-        if (idx >= dirArray.length - 1) {
-        }
       }, schedule);
     });
   }
 
-  protected getFoodById(id: number) {
+  protected getFoodById(id: string) {
     if (!this.currData) return undefined;
     const { manager } = this.currData;
     if (!manager) return undefined;
@@ -273,8 +268,8 @@ export class BaseAction extends Component {
       y: currPlayerCoord.y - mainPlayerCoord.y,
     };
     const mainPlayerVec = {
-      x: targetPlayer.state.velocity?.x ?? 0,
-      y: targetPlayer.state.velocity?.y ?? 0,
+      x: targetPlayer.state.movementDir?.x ?? 0,
+      y: targetPlayer.state.movementDir?.y ?? 0,
     };
 
     const angle =

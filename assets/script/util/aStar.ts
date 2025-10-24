@@ -1,9 +1,12 @@
-import { Component, Vec2, _decorator } from "cc";
+import { _decorator, Component, Vec2 } from "cc";
+
 import {
   ARENA_DEFAULT_OBJECT_SIZE,
+  ARENA_DEFAULT_VALUE,
   ARENA_OBJECT_TYPE,
 } from "../enum/arenaConfig";
 import { Coordinate, TileMapData } from "../interface/map";
+
 const { ccclass, property } = _decorator;
 
 export class AStarPoint {
@@ -76,12 +79,13 @@ export class AStar extends Component {
 
       // found path
       if (
-        (currentPoint.point && getDistance(currentPoint.point, target) <= 55) ||
+        (currentPoint.point &&
+          getDistance(currentPoint.point, target) <= TILE) ||
         currDepth >= maxDepth
       ) {
         if (
           currentPoint.point &&
-          getDistance(currentPoint.point, target) <= 55
+          getDistance(currentPoint.point, target) <= TILE
         ) {
           prevData.pathFound = currentPoint;
         }
@@ -184,35 +188,36 @@ export class AStar extends Component {
 
   private getNeighbor(coord: Coordinate) {
     const { TILE } = ARENA_DEFAULT_OBJECT_SIZE;
-    const { x, y } = getIdxByCoord(coord);
+    const { HEIGHT, WIDTH } = ARENA_DEFAULT_VALUE;
+    const { x, y } = getIdxByPos(coord);
     const result: Coordinate[] = [];
 
     // Left, Right, Up, Down
     if (this.isValidPosition(x + this.padding, y)) {
       result.push({
-        x: (x + this.padding) * TILE,
-        y: y * TILE,
+        x: (x + this.padding) * TILE - WIDTH / 2,
+        y: y * TILE - HEIGHT / 2,
       });
     }
 
     if (this.isValidPosition(x - this.padding, y)) {
       result.push({
-        x: (x - this.padding) * TILE,
-        y: y * TILE,
+        x: (x - this.padding) * TILE - WIDTH / 2,
+        y: y * TILE - HEIGHT / 2,
       });
     }
 
     if (this.isValidPosition(x, y + this.padding)) {
       result.push({
-        x: x * TILE,
-        y: (y + this.padding) * TILE,
+        x: x * TILE - WIDTH / 2,
+        y: (y + this.padding) * TILE - HEIGHT / 2,
       });
     }
 
     if (this.isValidPosition(x, y - this.padding)) {
       result.push({
-        x: x * TILE,
-        y: (y - this.padding) * TILE,
+        x: x * TILE - WIDTH / 2,
+        y: (y - this.padding) * TILE - HEIGHT / 2,
       });
     }
 
@@ -223,8 +228,8 @@ export class AStar extends Component {
       this.isValidPosition(x, y + this.padding)
     ) {
       result.push({
-        x: (x + this.padding) * TILE,
-        y: (y + this.padding) * TILE,
+        x: (x + this.padding) * TILE - WIDTH / 2,
+        y: (y + this.padding) * TILE - HEIGHT / 2,
       });
     }
 
@@ -234,8 +239,8 @@ export class AStar extends Component {
       this.isValidPosition(x, y + this.padding)
     ) {
       result.push({
-        x: (x - this.padding) * TILE,
-        y: (y + this.padding) * TILE,
+        x: (x - this.padding) * TILE - WIDTH / 2,
+        y: (y + this.padding) * TILE - HEIGHT / 2,
       });
     }
 
@@ -245,8 +250,8 @@ export class AStar extends Component {
       this.isValidPosition(x, y - this.padding)
     ) {
       result.push({
-        x: (x - this.padding) * TILE,
-        y: (y - this.padding) * TILE,
+        x: (x - this.padding) * TILE - WIDTH / 2,
+        y: (y - this.padding) * TILE - HEIGHT / 2,
       });
     }
 
@@ -256,8 +261,8 @@ export class AStar extends Component {
       this.isValidPosition(x, y - this.padding)
     ) {
       result.push({
-        x: (x + this.padding) * TILE,
-        y: (y - this.padding) * TILE,
+        x: (x + this.padding) * TILE - WIDTH / 2,
+        y: (y - this.padding) * TILE - HEIGHT / 2,
       });
     }
 
@@ -283,12 +288,12 @@ export class AStar extends Component {
         this.isValidPosition(idxX - 1, idxY - 1, depth);
     }
 
-    if (this.map[idxX] === undefined || this.map[idxX][idxY] === undefined)
+    if (this.map[idxY] === undefined || this.map[idxY][idxX] === undefined)
       return false;
 
-    const safeObstacle = this.map[idxX][idxY].type !== ARENA_OBJECT_TYPE.SPIKE;
+    const safeObstacle = this.map[idxY][idxX].type !== ARENA_OBJECT_TYPE.SPIKE;
 
-    const occupyByOther = this.map[idxX][idxY].playerIDList.find(
+    const occupyByOther = this.map[idxY][idxX].playerIDList.find(
       (id) => id !== this.currID,
     );
 
@@ -296,10 +301,10 @@ export class AStar extends Component {
   }
 
   private getCoordCost(coord: Coordinate) {
-    const { x, y } = getIdxByCoord(coord);
-    if (!this.map[x] || !this.map[x][y]) return 1;
+    const { x, y } = getIdxByPos(coord);
+    if (!this.map[y] || !this.map[y][x]) return 1;
 
-    switch (this.map[x][y].type) {
+    switch (this.map[y][x].type) {
       case ARENA_OBJECT_TYPE.NONE:
         return 1;
       default:
@@ -309,15 +314,16 @@ export class AStar extends Component {
 }
 
 export function getStringCoordName(coord: Coordinate) {
-  const { x, y } = getIdxByCoord(coord);
+  const { x, y } = getIdxByPos(coord);
   const result = "Coord_" + x + "_" + y;
   return result;
 }
 
-export function getIdxByCoord(coord: Coordinate) {
+export function getIdxByPos(pos: Coordinate) {
   const { TILE } = ARENA_DEFAULT_OBJECT_SIZE;
-  const idxX = Math.floor(coord.x / TILE);
-  const idxY = Math.floor(coord.y / TILE);
+  const { WIDTH, HEIGHT } = ARENA_DEFAULT_VALUE;
+  const idxX = Math.floor((pos.x + WIDTH / 2) / TILE);
+  const idxY = Math.floor((pos.y + HEIGHT / 2) / TILE);
 
   return {
     x: idxX,

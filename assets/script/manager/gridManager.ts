@@ -1,24 +1,18 @@
 import { _decorator, Component, game, math, Vec2 } from "cc";
+
+import { ARENA_DEFAULT_VALUE } from "../enum/arenaConfig";
 import { FoodConfig } from "../interface/food";
 import { GridConfig, SpikeConfig } from "../interface/gridConfig";
-import { ARENA_DEFAULT_VALUE } from "../enum/arenaConfig";
-import { FoodManager } from "./foodManager";
 import { Coordinate } from "../interface/map";
-import { getGridIdxByCoord } from "../util/arenaConvert";
-import { ObstacleManager } from "./obstacleManager";
 import { GameplayCamera } from "../object/gameplayCamera";
+import { getGridIdxByPos } from "../util/arenaConvert";
+
 const { ccclass, property } = _decorator;
 
 @ccclass("GridManager")
 export class GridManager extends Component {
-  @property(ObstacleManager)
-  public readonly obstacleManager?: ObstacleManager;
-
   @property(GameplayCamera)
   public readonly gameplayCamera?: GameplayCamera;
-
-  @property(FoodManager)
-  public readonly foodManager?: FoodManager;
 
   public gridList: GridConfig[] = [];
 
@@ -39,12 +33,16 @@ export class GridManager extends Component {
     for (let i = 0; i < maxRow; i++) {
       for (let j = 0; j < maxCol; j++) {
         const grid: GridConfig = {
-          x1: j * GRID_WIDTH,
-          x2: j * GRID_WIDTH + GRID_WIDTH,
-          y1: i * GRID_HEIGHT,
-          y2: i * GRID_HEIGHT + GRID_HEIGHT,
-          midX: j * GRID_WIDTH + GRID_WIDTH * 0.5,
-          midY: i * GRID_HEIGHT + GRID_HEIGHT * 0.5,
+          x1: j * GRID_WIDTH - ARENA_DEFAULT_VALUE.WIDTH / 2,
+          x2: j * GRID_WIDTH + GRID_WIDTH - ARENA_DEFAULT_VALUE.WIDTH / 2,
+          y1: i * GRID_HEIGHT - ARENA_DEFAULT_VALUE.HEIGHT / 2,
+          y2: i * GRID_HEIGHT + GRID_HEIGHT - ARENA_DEFAULT_VALUE.HEIGHT / 2,
+          midX:
+            j * GRID_WIDTH + GRID_WIDTH * 0.5 - ARENA_DEFAULT_VALUE.WIDTH / 2,
+          midY:
+            i * GRID_HEIGHT +
+            GRID_HEIGHT * 0.5 -
+            ARENA_DEFAULT_VALUE.HEIGHT / 2,
           foods: [] as FoodConfig[],
           spikes: [] as SpikeConfig[],
           chickBodies: new Map(),
@@ -103,7 +101,7 @@ export class GridManager extends Component {
   }
 
   private removeBodyOnGrid(coord: Coordinate, playerID: string) {
-    const gridIdx = getGridIdxByCoord(coord);
+    const gridIdx = getGridIdxByPos(coord);
 
     if (gridIdx === undefined) return;
 
@@ -119,7 +117,7 @@ export class GridManager extends Component {
   }
 
   private addBodyOnGrid(coord: Coordinate, playerID: string) {
-    const gridIdx = getGridIdxByCoord(coord);
+    const gridIdx = getGridIdxByPos(coord);
 
     if (gridIdx === undefined) return;
 
